@@ -1,0 +1,3 @@
+[submodule "mine"]
+	path = mine
+	url = https://github.com/davemc0/GenArtPrivate.git
