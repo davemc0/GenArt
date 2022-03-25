@@ -1,18 +1,17 @@
-#include "Individual.h"
+#include "Interop.h"
+
 #include "CUDAHelpers.h"
+#include "Individual.h"
 #include "UI.h"
 
-#define GLEW_STATIC
 #include "GL/glew.h"
+
+// This needs to come after GLEW
 #include "GL/freeglut.h"
 
 #include "cuda_gl_interop.h"
 #include "cuda_runtime_api.h"
-#include "device_types.h"
-#include "Interop.h"
-
-// #include "boost/thread/thread.hpp"
-// #include "boost/thread/mutex.hpp"
+//#include "device_types.h"
 
 uc4DImage::uc4DImage()
 {
@@ -34,13 +33,10 @@ uc4DImage::~uc4DImage()
     cudaEventDestroy(m_start);
     cudaEventDestroy(m_stop);
 
-    if(m_vboCUDA)
-        cudaGraphicsUnregisterResource(m_vboCUDA);
-    if(m_vbo)
-        glDeleteBuffers(1, &m_vbo);
+    if (m_vboCUDA) cudaGraphicsUnregisterResource(m_vboCUDA);
+    if (m_vbo) glDeleteBuffers(1, &m_vbo);
 
-    if (m_spoofed_uc4Image)
-        uc4Image::SetImage(); // It was a spoofed pointer, so don't delete it; just unhook it.
+    if (m_spoofed_uc4Image) uc4Image::clear(); // It was a spoofed pointer, so don't delete it; just unhook it. Was: SetImage().
 }
 
 void uc4DImage::SetSize(const int wid_ /*= 0*/, const int hgt_ /*= 0*/, const bool doFill /*= false*/, const bool doDel /*= true*/)
@@ -60,18 +56,17 @@ void uc4DImage::SetSize(const int wid_ /*= 0*/, const int hgt_ /*= 0*/, const bo
     // std::cerr << "m_vboCUDA = " << m_vboCUDA << '\n';
 
     m_spoofed_uc4Image = true;
-    uc4Image::SetImage(reinterpret_cast<uc4Pixel*>(0xdeadbeefull), wid_, hgt_); // This is obviously not a pointer. We only want the VBO, not the pointer, for now.
+    uc4Image::SetImage(reinterpret_cast<uc4Pixel*>(0xdeadbeefull), wid_, hgt_, false); // Not a pointer. We only want the VBO, not the pointer, for now.
     m_pitch = w() * sizeof(uc4Image::PixType);
 }
 
-const uc4Pixel* uc4DImage::pp(const int i/*=0*/)
+const uc4Pixel* uc4DImage::pp(const int i /*=0*/)
 {
     int wid = w();
     int hgt = h();
-    ASSERT_D(wid>0 && hgt>0);
+    ASSERT_D(wid > 0 && hgt > 0);
 
-    if (m_spoofed_uc4Image)
-        static_cast<uc4Image*>(this)->SetImage(); // Unhook the spoofed image, if any
+    if (m_spoofed_uc4Image) static_cast<uc4Image*>(this)->clear(); // Unhook the spoofed image, if any
     m_spoofed_uc4Image = false;
 
     // Do a real host allocation and copy the image data from device
@@ -139,16 +134,15 @@ float uc4DImage::renderTime()
 
 bool uc4DImage::imDone() const
 {
-  return renderTimerFinished();
+    return renderTimerFinished();
 }
 
 bool uc4DImage::needsLaunch() const
 {
-  return !m_launched;
+    return !m_launched;
 }
 
 void uc4DImage::setLaunched(bool val)
 {
-  m_launched = val;
+    m_launched = val;
 }
-

@@ -2,5 +2,5 @@
 
 Style::Style()
 {
-	m_variability = 0.5f; 
+    m_variability = 0.5f;
 }

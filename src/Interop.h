@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Image/tImage.h"
+#include <Image/tImage.h>
 
 class uc4DImage : public uc4Image
 {
@@ -13,14 +13,14 @@ public:
     void SetSize(const int wid_ = 0, const int hgt_ = 0, const bool doFill = false, const bool doDel = true);
 
     // Copies image from device to host and returns a const pointer to this pixel on host.
-    const uc4Pixel* pp(const int i=0);
+    const uc4Pixel* pp(const int i = 0);
 
     // Returns a pointer to this pixel.
     const uc4Pixel* pp(const int x, const int y)
     {
-        ASSERT_D(x>=0 && x<w());
-        ASSERT_D(y>=0 && y<h());
-        return pp(ind(x,y));
+        ASSERT_D(x >= 0 && x < w());
+        ASSERT_D(y >= 0 && y < h());
+        return pp(ind(x, y));
     }
 
     unsigned int Vbo() const { return m_vbo; }
@@ -47,7 +47,3 @@ private:
     bool m_spoofed_uc4Image;
     bool m_launched; // True when a render has been launched
 };
-
-extern void UIYield();
-extern void UILock(int win);
-extern void UIUnlock(int win);

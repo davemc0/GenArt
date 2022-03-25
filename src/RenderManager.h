@@ -5,17 +5,16 @@
 #include "Population.h"
 #include "Style.h"
 
-// #include "boost/thread/mutex.hpp"
-
 #include <deque>
 
-const int THUMB_WID_HGT = 364; // Width and height of thumbnail images
-const int FINAL_WID_HGT = 1288; // Default width and height of final images
+// For 4K, good values are 364 and 1288.
+const int THUMB_WID_HGT = 160; // Width and height of thumbnail images
+const int FINAL_WID_HGT = 512; // Default width and height of final images
 
 class RenderManager
 {
 public:
-    int thWid, thHgt; // Size of thumbnail images
+    int thWid, thHgt;       // Size of thumbnail images
     Quality_t thumbQuality; // Rendering quality of thumbnail images
 
     int finalWid, finalHgt; // Size of large images to be rendered and saved, specified on cmd line
@@ -25,9 +24,7 @@ public:
 
     RenderManager();
 
-    ~RenderManager()
-    {
-    }
+    ~RenderManager() {}
 
     // Push a copy of the individual onto FinalRenderQueue to be rendered at the given resolution and quality
     void PushToFinalRenderQueue(Individual::shp ind);
@@ -45,7 +42,6 @@ public:
     bool DoHiddenRenderWork(AutoScorer* Scorer);
     bool DoFinalRenderQueueWork(bool renderSaveAll);
 
-    // Must wrap all accesses to this in the M() mutex.
     std::deque<Individual::shp>& getFinalRenderQueue() { return FinalRenderQueue; }
 
     bool isRenderQueueEmpty();
@@ -53,12 +49,6 @@ public:
     void setQuality(Quality_t& targetQ, const Quality_t& Q);
     void inputQuality(Quality_t& ThumbQuality);
 
-    // This mutex is for locking FinalRenderQueue.
-    // If using both this mutex and Population's mutex, this one is inner.
-    // boost::mutex & 
-    void RMM(char* S); // Returns a reference to the mutex
-
 private:
     std::deque<Individual::shp> FinalRenderQueue; // List of individuals to render at final quality
-    // boost::mutex m_mutex;
 };

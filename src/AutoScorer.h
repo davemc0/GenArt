@@ -2,7 +2,7 @@
 
 #include "Individual.h"
 
-#include "Image/tImage.h"
+#include <Image/tImage.h>
 
 class AutoScorer
 {
@@ -14,13 +14,13 @@ public:
 class ColorfulnessAutoScorer : public AutoScorer
 {
 public:
-	void ComputeScore(Individual* Ind);
+    void ComputeScore(Individual* Ind);
 };
 
 class RandomAutoScorer : public AutoScorer
 {
 public:
-	void ComputeScore(Individual* Ind);
+    void ComputeScore(Individual* Ind);
 };
 
 class ImageSimilarityAutoScorer : public AutoScorer
@@ -32,7 +32,7 @@ public:
     void ComputeScore(Individual* Ind);
 
 private:
-	void init(Individual* Ind);
+    void init(Individual* Ind);
 
     uc4Image* TargetImg; // The image to evolve to be like
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 inline void CopyFile(const std::string& inFName, const std::string& outFName)

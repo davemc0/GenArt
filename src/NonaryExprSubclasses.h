@@ -1,7 +1,7 @@
+#pragma once
+
 // The subclasses for nonary expressions
 // Only include this in internal .cpp files
-
-#pragma once
 
 #include "Expr.h"
 
@@ -24,23 +24,23 @@ public:
     inline std::string getName() const { return name; }
     inline std::string getFuncName() const { return fname; }
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
 
     Expr* Copy() const;
 
     std::string Print(int pstyle) const;
 
-    int preTokenStream(int *TokenStream, const int max_len) const;
-    int postTokenStream(int *TokenStream, const int max_len) const;
+    int preTokenStream(int* TokenStream, const int max_len) const;
+    int postTokenStream(int* TokenStream, const int max_len) const;
 
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     // If probable, modify the random number
-    Expr* Mutate(const int Prob, const int RandTreeSize, const float ConstPerturb, const VarVals_t *VV);
+    Expr* Mutate(const int Prob, const int RandTreeSize, const float ConstPerturbStDev, const VarVals_t* VV);
 
     // Set all constants in this Expr to randomly perturbed values.
-    Expr* PerturbConstants(const float rc);
+    Expr* PerturbConstants(const float ConstPerturbStDev);
 
     bool isequal(const Expr* E) const;
     bool isless(const Expr* E) const;
@@ -67,20 +67,20 @@ public:
     inline std::string getName() const { return name; }
     inline std::string getFuncName() const { return fname; }
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
 
     Expr* Copy() const;
 
     std::string Print(int pstyle) const;
 
-    int preTokenStream(int *TokenStream, const int max_len) const;
-    int postTokenStream(int *TokenStream, const int max_len) const;
+    int preTokenStream(int* TokenStream, const int max_len) const;
+    int postTokenStream(int* TokenStream, const int max_len) const;
 
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     // If probable, replace variable with a different one
-    Expr* Mutate(const int prob, const int siz, const float ConstPerturb, const VarVals_t *VV);
+    Expr* Mutate(const int prob, const int siz, const float ConstPerturb, const VarVals_t* VV);
 
     bool isequal(const Expr* E) const;
     bool isless(const Expr* E) const;

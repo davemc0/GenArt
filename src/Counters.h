@@ -1,18 +1,21 @@
+#pragma once
+
 #include <map>
+#include <string>
 
 class Counters
 {
 public:
-	Counters(); 
-	~Counters();
+    Counters();
+    ~Counters();
 
-	void inc(const char* s);
+    void inc(const char* s);
 
-	void print();
+    void print();
 
-	void clear();
+    void clear();
 
 private:
-	std::map<std::string, int>* Counts;
-	int total;
+    std::map<std::string, int>* Counts;
+    int total;
 };

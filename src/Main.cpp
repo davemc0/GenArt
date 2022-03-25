@@ -36,21 +36,16 @@
 #include "AutoScorer.h"
 #include "Counters.h"
 #include "Evolver.h"
+#include "Math/Random.h"
 #include "MathStyle.h"
 #include "MathStyleCUDARender.h"
 #include "Population.h"
 #include "RenderManager.h"
 #include "Style.h"
+#include "Test.h"
 #include "UI.h"
 
-#include "Test.h"
-
-#include "Util/Timer.h"
-#include "Math/Random.h"
-
-// #include "boost/thread/thread.hpp"
-// #include "boost/bind.hpp"
-
+#include <Util/Timer.h>
 #include <iostream>
 
 Counters* C = NULL;
@@ -63,10 +58,9 @@ RenderManager* RMan = NULL;
 Style* SEng = NULL;
 UI* GUI = NULL;
 
-static void Usage(const char *message = NULL, const bool Exit = true)
+static void Usage(const char* message = NULL, const bool Exit = true)
 {
-    if (message)
-        std::cerr << "\nERROR: " << message << std::endl;
+    if (message) std::cerr << "\nERROR: " << message << std::endl;
 
     std::cerr << "Program options:\n";
     std::cerr << "-colormapimg <im.jpg> <N> Make an individual whose ColorMap is derived from the given image and is N colors\n";
@@ -85,21 +79,20 @@ static void Usage(const char *message = NULL, const bool Exit = true)
 
     std::cerr << "\nAll GLUT arguments must come after all app. arguments.\n\n";
 
-    if (Exit)
-        exit(1);
+    if (Exit) exit(1);
 }
 
-static void Args(int &argc, char **argv)
+static void Args(int& argc, char** argv)
 {
     bool onlyColorMaps = false;
     int CUDADevice = 0;
 
-	C = new Counters();
-	// Evo = new Evolver(new ColorfulnessAutoScorer());
-	// Evo = new Evolver(new ImageSimilarityAutoScorer(nullptr));
-	// Evo = new Evolver(new RandomAutoScorer());
-	Evo = new Evolver(NULL);
-	Pop = new Population();
+    C = new Counters();
+    // Evo = new Evolver(new ColorfulnessAutoScorer());
+    // Evo = new Evolver(new ImageSimilarityAutoScorer(nullptr));
+    // Evo = new Evolver(new RandomAutoScorer());
+    Evo = new Evolver(NULL);
+    Pop = new Population();
     RMan = new RenderManager();
     MSEng = new MathStyle(); // When more styles exist, fix this.
     SEng = MSEng;
@@ -108,68 +101,48 @@ static void Args(int &argc, char **argv)
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "-h" || std::string(argv[i]) == "-help") {
             Usage();
-        }
-        else if (std::string(argv[i]) == "-rendersave") {
+        } else if (std::string(argv[i]) == "-rendersave") {
             size_t idx = atoi(argv[i + 1]);
-            Pop->M("lock");
             if (idx > 10000) {
                 int IDNum = (int)idx; // They specified an IDNum, so search for the index
                 for (idx = 0; idx < Pop->sizeZoo(); idx++) {
-                    if ((Pop->beginZoo() + idx)->get()->GetIDNum() == IDNum)
-                        break;
+                    if ((Pop->beginZoo() + idx)->get()->GetIDNum() == IDNum) break;
                 }
             }
-            if (idx < 0 || idx > Pop->sizeZoo())
-                Usage("Must specify a population file before -rendersaveimg and the index must be valid.");
+            if (idx < 0 || idx > Pop->sizeZoo()) Usage("Must specify a population file before -rendersaveimg and the index must be valid.");
             std::cerr << "Rendering at index " << idx << '\n';
             Pop->getZoo(idx)->requestSave();
             RMan->PushToFinalRenderQueue(Pop->getZoo(idx));
-            Pop->M("unlock");
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-rendersaveall") {
+        } else if (std::string(argv[i]) == "-rendersaveall") {
             size_t idx = atoi(argv[i + 1]);
-            Pop->M("lock");
-            if (idx < 0 || idx > Pop->sizeZoo())
-                Usage("Must specify a population file before -rendersaveall and the index must be valid.");
+            if (idx < 0 || idx > Pop->sizeZoo()) Usage("Must specify a population file before -rendersaveall and the index must be valid.");
             RMan->PushAllToFinalRenderQueue(idx);
-            Pop->M("unlock");
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-anim") {
+        } else if (std::string(argv[i]) == "-anim") {
             size_t idx = atoi(argv[i + 1]);
-            Pop->M("lock");
-            if (idx < 0 || idx > Pop->sizeZoo())
-                Usage("Must specify a population file before -anim and the index must be valid.");
+            if (idx < 0 || idx > Pop->sizeZoo()) Usage("Must specify a population file before -anim and the index must be valid.");
             RMan->PushAnimation(Pop->getZoo(idx));
-            Pop->M("unlock");
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-evolveimg") {
-			if (Evo)
-				delete Evo;
-			Evo = new Evolver(new ImageSimilarityAutoScorer(new uc4Image(argv[i + 1])));
+        } else if (std::string(argv[i]) == "-evolveimg") {
+            if (Evo) delete Evo;
+            Evo = new Evolver(new ImageSimilarityAutoScorer(new uc4Image(argv[i + 1])));
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-seed") {
+        } else if (std::string(argv[i]) == "-seed") {
             unsigned int seed = atoi(argv[i + 1]);
             unsigned int s = SRand(seed);
             std::cerr << "Using Seed = " << s << '\n';
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-device") {
+        } else if (std::string(argv[i]) == "-device") {
             CUDADevice = atoi(argv[i + 1]);
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-test") {
+        } else if (std::string(argv[i]) == "-test") {
             Test();
             RemoveArgs(argc, argv, i);
-        }
-        else if (std::string(argv[i]) == "-testex") {
+        } else if (std::string(argv[i]) == "-testex") {
             TestExpressions(argv[i + 1]);
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-thsize") {
+        } else if (std::string(argv[i]) == "-thsize") {
             RMan->thWid = atoi(argv[i + 1]);
             float a = atof(argv[i + 2]);
             if (a < 3.0f)
@@ -180,12 +153,9 @@ static void Args(int &argc, char **argv)
             }
             RMan->finalHgt = (int)(RMan->finalWid / a);
 
-            Pop->M("lock");
             Pop->ClearImages();
-            Pop->M("unlock");
             RemoveArgs(argc, argv, i, 3);
-        }
-        else if (std::string(argv[i]) == "-size") {
+        } else if (std::string(argv[i]) == "-size") {
             RMan->finalWid = atoi(argv[i + 1]);
             float a = atof(argv[i + 2]);
             if (a < 3.0f)
@@ -196,61 +166,53 @@ static void Args(int &argc, char **argv)
             }
             RMan->thHgt = (int)(RMan->thWid / a);
 
-            Pop->M("lock");
             Pop->ClearImages();
-            Pop->M("unlock");
             RemoveArgs(argc, argv, i, 3);
-        }
-        else if (std::string(argv[i]) == "-gpuinfo") {
+        } else if (std::string(argv[i]) == "-gpuinfo") {
             GUI->GetOpenGLVersion(argc, argv);
             getCUDADeviceInfo();
             exit(0);
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-fmt") {
+        } else if (std::string(argv[i]) == "-fmt") {
             RMan->imageSaveFormat = argv[i + 1];
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-qual") {
+        } else if (std::string(argv[i]) == "-qual") {
             Quality_t Q;
             Q.MinSamples = atof(argv[i + 1]);
             RMan->setQuality(RMan->finalQuality, Q);
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-thqual") {
+        } else if (std::string(argv[i]) == "-thqual") {
             Quality_t Q;
             Q.MinSamples = atof(argv[i + 1]);
             RMan->setQuality(RMan->thumbQuality, Q);
             RemoveArgs(argc, argv, i, 2);
-        }
-        else if (std::string(argv[i]) == "-noopt") {
+        } else if (std::string(argv[i]) == "-noopt") {
             MSEng->setOptimize(false);
             RemoveArgs(argc, argv, i);
-        }
-        else if (std::string(argv[i]) == "-colormapimg") {
+        } else if (std::string(argv[i]) == "-colormapimg") {
             MSEng->ImageColorMapToIndiv(argv[i + 1], atoi(argv[i + 2]));
             RemoveArgs(argc, argv, i, 3);
-        }
-        else if (std::string(argv[i]) == "-colormapsonly") {
+        } else if (std::string(argv[i]) == "-colormapsonly") {
             onlyColorMaps = true;
             RemoveArgs(argc, argv, i, 1);
-        }
-        else if (argv[i][0] == '-') {
+        } else if (argv[i][0] == '-') {
             Usage("Unknown option.");
-        }
-        else {
+        } else {
             // Read a population file on the command line
 
             // Remove suffix
             char tmpFName[1000];
             sprintf(tmpFName, "%s", argv[i]);
-            char *dot = strrchr(tmpFName, '.');
+            char* dot = strrchr(tmpFName, '.');
             *dot = '\0';
 
 #ifdef WIN32
             // Change forward slashes to backslashes
-            char *N = tmpFName;
-            while (*N) { if (*N == '/') *N = '\\'; N++; }
+            char* N = tmpFName;
+            while (*N) {
+                if (*N == '/') *N = '\\';
+                N++;
+            }
 #endif
             // Set the global filename each time. Thus, the results are saved to the last loaded file.
             Pop->setFNameBase(tmpFName);
@@ -264,14 +226,14 @@ static void Args(int &argc, char **argv)
     MSRend = new MathStyleCUDARender(CUDADevice);
     Rend = MSRend;
 
-    if(!RMan->DoFinalRenderQueueWork(true)) { // If doing requested rendering, don't do mainloop.
+    if (!RMan->DoFinalRenderQueueWork(true)) { // If doing requested rendering, don't do mainloop.
         GUI->MainLoop();
     }
 
     finishCUDA();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     try {
         unsigned int s = SRand();
@@ -280,7 +242,7 @@ int main(int argc, char **argv)
         Args(argc, argv);
         std::cerr << "Bye\n";
     }
-    catch (DMcError &Er) {
+    catch (DMcError& Er) {
         std::cerr << "DMcError: " << Er.Er << std::endl;
         std::cerr.flush();
         throw Er;

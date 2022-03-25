@@ -2,8 +2,7 @@
 
 #include "Interop.h"
 
-#include "Image/tImage.h"
-
+#include <Image/tImage.h>
 #include <memory>
 #include <string>
 
@@ -15,16 +14,16 @@ class Individual
 public:
     typedef std::shared_ptr<Individual> shp;
 
-    float Score; // How much I like this individual
+    float Score;              // How much I like this individual
     float Xmin, Ymin, BoxWid; // The square of the infinite plane to map to the image
-    int Generation; // What generation this guy was made in (max parent gen. + 1)
-    int IDNum; // Unique ID of this individual
-    int ParentA, ParentB; // The unique IDs of the parents; ParentB is -1 if none.
+    int Generation;           // What generation this guy was made in (max parent gen. + 1)
+    int IDNum;                // Unique ID of this individual
+    int ParentA, ParentB;     // The unique IDs of the parents; ParentB is -1 if none.
 
     Individual(float Score_, int IDNum_, int Generation_, int ParentA_, int ParentB_, float XMin_, float YMin_, float BoxWid_);
 
     // The copy constructor copies everything but the image, which it leaves empty.
-    Individual(const Individual &In);
+    Individual(const Individual& In);
 
     ~Individual();
 
@@ -36,7 +35,7 @@ public:
     void RenderLaunch(bool isFinal, AutoScorer* Scorer = NULL); // Using the parameters from RenderManager, launch a render for either Final or Thumb
 
     void ImClear(); // Delete all images associated with this individual and reset the flags
-    void ImSave(); // Save the Final image; blocks until finished
+    void ImSave();  // Save the Final image; blocks until finished
 
     inline float GetScore() const { return Score; }
     inline void SetScore(float score) { Score = score; }
@@ -48,16 +47,16 @@ public:
     inline int GetParentB() const { return ParentB; }
     inline void requestSave() { m_requestedSave = true; }
 
-    void Zoom(float z); // Zoom in or out on the image
+    void Zoom(float z);           // Zoom in or out on the image
     void Pan(float xm, float ym); // Pan the image to new corner location
-    void CenterX(); // Center the image in X
-    void CenterY(); // Center the image in Y
+    void CenterX();               // Center the image in X
+    void CenterY();               // Center the image in Y
 
     virtual std::string stringSave();
     virtual std::string stringDisplay(const float x = -1.0f, const float y = -1.0f);
 
-    virtual bool equal(const Individual &p) const;
-    virtual bool less(const Individual &p) const;
+    virtual bool equal(const Individual& p) const;
+    virtual bool less(const Individual& p) const;
 
     void assignIDNum();
 

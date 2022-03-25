@@ -1,19 +1,19 @@
+#include "MathStyleCUDARender.h"
+
 #include "CUDAHelpers.h"
 #include "ExprImplementations.h"
 #include "ExprTools.h"
-#include "MathIndividual.h"
-#include "MathStyleCUDARender.h"
-#include "MathStyleRender_kernel.h"
-
 #include "Math/Halton.h"
 #include "Math/MiscMath.h"
 #include "Math/Random.h"
+#include "MathIndividual.h"
+#include "MathStyleRender_kernel.h"
 
 #include <iostream>
 
 CUDARender::CUDARender(const int deviceId_) : m_deviceId(deviceId_)
 {
-  setCUDADevice(m_deviceId);
+    setCUDADevice(m_deviceId);
 }
 
 MathStyleCUDARender::MathStyleCUDARender(const int deviceId_) : CUDARender(deviceId_)
@@ -30,7 +30,7 @@ MathStyleCUDARender::MathStyleCUDARender(const int deviceId_) : CUDARender(devic
 
 MathStyleCUDARender::~MathStyleCUDARender()
 {
-    CUDA_SAFE_CALL(cudaFreeArray(m_ColorMapCUDAArray));
+    freeArray(); // Don't pull this function implementation in here because it throws.
 }
 
 void MathStyleCUDARender::Render(Individual* ind_, uc4DImage* Im, const int w_, const int h_, const Quality_t Q_)
@@ -43,17 +43,9 @@ void MathStyleCUDARender::Render(Individual* ind_, uc4DImage* Im, const int w_, 
     ASSERT_R(ind->G);
     ASSERT_R(w_ > 0 && h_ > 0);
 
-    {
-        // Exclusive lock only while writing to data owned by the Population
-        // boost::lock_guard<boost::mutex> _(Pop->M("lock_guard lock"));
+    // std::cerr << "MathStyleCUDARender::Render: " << ind->IDNum << ' ' << w_ << 'x' << h_ << " Quality=" << Q_ << std::endl;
 
-        // std::cerr << "MathStyleCUDARender::Render: " << ind->IDNum << ' ' << w_ << 'x' << h_ << " Quality=" << Q_ << std::endl;
-
-        Im->SetSize(w_, h_);
-
-        // Allow other host threads to access the Population
-        // Must have a shared lock the whole time that rendering is happening.
-    }
+    Im->SetSize(w_, h_);
 
     checkCUDAError("Here");
 
@@ -89,18 +81,16 @@ void MathStyleCUDARender::Render(Individual* ind_, uc4DImage* Im, const int w_, 
 
     int GridHgtInPix = getGridHeight(w_, h_, WorkEstimate(HostTokens, TokenCnt), Q_.MinSamples);
 
-    uchar4 *uc4DevPtr = static_cast<uchar4*>(Im->map());
+    uchar4* uc4DevPtr = static_cast<uchar4*>(Im->map());
 
     Im->renderTimerStart();
 
     // std::cerr << "GridHgtInPix: " << GridHgtInPix << std::endl;
+
     // Launch the render as an async series of kernel launches to allow user interaction during long renders
     int grids = 0;
     for (int yofs = 0; yofs < h_; yofs += GridHgtInPix) {
-        InvokeRenderKernel(uc4DevPtr, Im->Pitch(),
-            w_, h_, GridHgtInPix, yofs, ind->BoxWid,
-            ind->Xmin, ind->Ymin, Q_.MinSamples,
-            ind->ColorSpace);
+        InvokeRenderKernel(uc4DevPtr, Im->Pitch(), w_, h_, GridHgtInPix, yofs, ind->BoxWid, ind->Xmin, ind->Ymin, Q_.MinSamples, ind->ColorSpace);
         checkCUDAError("InvokeRenderKernel");
         // std::cerr << '.';
         grids++;
@@ -123,15 +113,15 @@ void MathStyleCUDARender::InitSampleTable()
     for (int i = 0; i < NUM_SAMPLE_LOCS * 2; i++) RandTable[i] = DRandf(0, 1);
 
     ASSERT_R(sizeof(RandTable) == sizeof(SampTab.tab));
-    ASSERT_R(sizeof(RandTable) == sizeof(float2)* NUM_SAMPLE_LOCS);
+    ASSERT_R(sizeof(RandTable) == sizeof(float2) * NUM_SAMPLE_LOCS);
 
     checkCUDAError("InitSampleTable0");
 
-    loadSampleLocsToConstant((const float2 *)SampTab.tab, sizeof(SampTab.tab), (const float2 *)RandTable, sizeof(RandTable));
+    loadSampleLocsToConstant((const float2*)SampTab.tab, sizeof(SampTab.tab), (const float2*)RandTable, sizeof(RandTable));
     checkCUDAError("InitSampleTable4");
 }
 
-int MathStyleCUDARender::WorkEstimate(int *HostTokens, int TokenCount)
+int MathStyleCUDARender::WorkEstimate(int* HostTokens, int TokenCount)
 {
     int TokensInIFS = 0, OtherTokens = 0;
     for (int i = 0; i < TokenCount; i++) {
@@ -141,9 +131,8 @@ int MathStyleCUDARender::WorkEstimate(int *HostTokens, int TokenCount)
 
             TokensInIFS += cntL + cntR;
         }
-        
-        if ((HostTokens[i] & 0xff) != Var_e && (HostTokens[i] & 0xff) != Const_e)
-            OtherTokens++;
+
+        if ((HostTokens[i] & 0xff) != Var_e && (HostTokens[i] & 0xff) != Const_e) OtherTokens++;
     }
 
     // The 8 accounts for some overhead.
@@ -158,20 +147,19 @@ float MathStyleCUDARender::computeDeviceOpsPerMS()
     checkCUDAError("cudaGetDeviceProperties");
 
     int clocksPerMS = deviceProp.clockRate > 0 ? deviceProp.clockRate : 1000000; // For AModel
-    float scaleFactorSM = deviceProp.multiProcessorCount > 8 ? 2.0f : 1.0f; // Fast SM?
+    float scaleFactorSM = deviceProp.multiProcessorCount > 8 ? 2.0f : 1.0f;      // Fast SM?
     float clocksPerOp = 5.0f;
     float devOpsPerMS = float(clocksPerMS) * float(deviceProp.multiProcessorCount) * scaleFactorSM / clocksPerOp;
 
-    std::cerr << "DeviceOpsPerMS = " << devOpsPerMS << " = clockRate = " << clocksPerMS
-        << " multiProcCount = " << deviceProp.multiProcessorCount << " scaleFactorSM = " << scaleFactorSM 
-        << " / clocksPerOp = " << clocksPerOp << std::endl;
+    std::cerr << "DeviceOpsPerMS = " << devOpsPerMS << " = clockRate = " << clocksPerMS << " multiProcCount = " << deviceProp.multiProcessorCount
+              << " scaleFactorSM = " << scaleFactorSM << " / clocksPerOp = " << clocksPerOp << std::endl;
 
     return devOpsPerMS;
 }
 
 void MathStyleCUDARender::testGridHeight()
 {
-    while(1) {
+    while (1) {
         int w = randn(2000) + 100;
         int h = randn(2000) + 100;
 
@@ -190,11 +178,12 @@ void MathStyleCUDARender::testGridHeight()
 
             waste = rem ? (GridHgtInPix - rem) : 0;
 
-            std::cerr << GridHgtInPix << "*" << full << "+" << rem << "=" << h << " waste = " << waste << (waste > Grids * BLOCKDIM_Y ? " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n" : "\n");
- 
+            std::cerr << GridHgtInPix << "*" << full << "+" << rem << "=" << h << " waste = " << waste
+                      << (waste > Grids * BLOCKDIM_Y ? " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n" : "\n");
+
             GridHgtInPix -= BLOCKDIM_Y;
             Grids = GridHgtInPix ? (h + GridHgtInPix - 1) / GridHgtInPix : 99999;
-        } while(waste >= 0 && GridHgtInPix > 0 && Grids == OGrids);
+        } while (waste >= 0 && GridHgtInPix > 0 && Grids == OGrids);
     }
 }
 
@@ -215,26 +204,28 @@ int MathStyleCUDARender::getGridHeight(int w, int h, float estOpsPerSample, int 
     float GridHgtInBlocks = HgtInBlocks / Grids;
     int GridHgtInPix = 0;
 
-    if(Grids < 5.0f) { // We really care about the correct number of grids to avoid timeouts.
+    if (Grids < 5.0f) { // We really care about the correct number of grids to avoid timeouts.
         int iGrids = (int)(Grids + 0.5f);
         if (iGrids < 1) iGrids = 1;
         float GridHgtInBlocks = HgtInBlocks / (float)iGrids;
         int iGridHgtInBlocks = (int)GridHgtInBlocks; // round down
         GridHgtInPix = iGridHgtInBlocks * BLOCKDIM_Y;
-        while (iGrids * GridHgtInPix < h)
-            GridHgtInPix += BLOCKDIM_Y; // round up if necessary
+        while (iGrids * GridHgtInPix < h) GridHgtInPix += BLOCKDIM_Y; // round up if necessary
         ASSERT_R(iGrids * GridHgtInPix >= h);
-    }
-    else { // Don't care so much about the correct number of grids. Try to save work. Round GridHgtInBlocks up so grids goes down.
+    } else { // Don't care so much about the correct number of grids. Try to save work. Round GridHgtInBlocks up so grids goes down.
         float GridHgtInBlocks = HgtInBlocks / Grids;
         int iGridHgtInBlocks = (int)(GridHgtInBlocks + 0.99f); // round up
         GridHgtInPix = iGridHgtInBlocks * BLOCKDIM_Y;
         ASSERT_R(GridHgtInPix > 0);
         int iGrids = (h + GridHgtInPix - 1) / GridHgtInPix;
         ASSERT_R(iGrids * GridHgtInPix >= h);
-        while (iGrids * GridHgtInPix - h >= iGrids * BLOCKDIM_Y)
-            GridHgtInPix -= BLOCKDIM_Y; // round down if possible
+        while (iGrids * GridHgtInPix - h >= iGrids * BLOCKDIM_Y) GridHgtInPix -= BLOCKDIM_Y; // round down if possible
     }
 
     return GridHgtInPix;
+}
+
+void MathStyleCUDARender::freeArray()
+{
+    CUDA_SAFE_CALL(cudaFreeArray(m_ColorMapCUDAArray));
 }

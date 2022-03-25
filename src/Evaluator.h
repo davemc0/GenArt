@@ -13,8 +13,7 @@ const int XI = 0, YI = 1, RI = 2, IFSX = 3, IFSY = 4, REDI = 5, GRNI = 6;
 
 // TokenStream is made of ExprOpcodes_t with inline floats and variable indices.
 // TokenStream contains the length and three concatenated streams for R, G, and B. At end of evaluation, these will be on the stack.
-DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, float y, float r, int tid,
-    float &rout, float &gout, float &bout)
+DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, float y, float r, int tid, float& rout, float& gout, float& bout)
 {
     float ValStack[MAX_STACK];
 
@@ -22,10 +21,10 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
     STK(YI) = y;
     STK(RI) = r;
 
-    float StTop; // Will get stored in STK(IFSY).
+    float StTop;      // Will get stored in STK(IFSY).
     int IFSIter = -1; // < 0 means not inside IFS.  Takes a register, but putting it on the stack is a 10% slowdown.
-    int St = IFSX; // Points to the highest used element. Use pre-increment and post-decrement.
-    int Tk = 1; // Skip element 0, which is the length
+    int St = IFSX;    // Points to the highest used element. Use pre-increment and post-decrement.
+    int Tk = 1;       // Skip element 0, which is the length
 #ifndef __CUDACC__
     static int StHigh = 0;
 #endif
@@ -35,8 +34,16 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
 
         float StM1 = STK(St);
         switch (tok) {
-        case Const_e: St++; STK(St) = StTop; StTop = *(const float *)&(TokenStream[Tk++]); break;
-        case Var_e: St++; STK(St) = StTop; StTop = STK(TokenStream[Tk++]); break;
+        case Const_e:
+            St++;
+            STK(St) = StTop;
+            StTop = *(const float*)&(TokenStream[Tk++]);
+            break;
+        case Var_e:
+            St++;
+            STK(St) = StTop;
+            StTop = STK(TokenStream[Tk++]);
+            break;
 
         case Abs_e: StTop = eAbs(StTop); break;
         case ACos_e: StTop = eACos(StTop); break;
@@ -74,7 +81,7 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
                 IFSIter = 0;
             }
 
-            if (IFSIter < IFS_MAX_ITER && ((StM1*StM1 + StTop*StTop) < 4.0f)) {
+            if (IFSIter < IFS_MAX_ITER && ((StM1 * StM1 + StTop * StTop) < 4.0f)) {
                 // Continuing IFS
                 int ChildCnt = (TokenStream[Tk - 1] >> 16); // Encodes how many children the IFS has, and therefore how far back to jump Tk.
 
@@ -83,9 +90,9 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
 
                 STK(XI) = StM1; // Store the evaluated operands of the IFS as the X and Y global variables. Don't recalculate R.
                 STK(YI) = StTop;
-                St--; StTop = STK(St); // Prepare for the stack push that happens when we start the next iteration
-            }
-            else {
+                St--;
+                StTop = STK(St); // Prepare for the stack push that happens when we start the next iteration
+            } else {
                 // Stopping IFS
                 StTop = IFSIter / float(IFS_MAX_ITER);
                 STK(XI) = STK(IFSX); // Restore X and Y to their original values.
@@ -95,8 +102,7 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
             break;
         }
         // For a binary function, need to pop the stack since it consumed 2 operands and only pushed 1.
-        if (tok > UnaryMinus_e)
-            St--;
+        if (tok > UnaryMinus_e) St--;
 
 #ifndef __CUDACC__
         if (St > StHigh) { // Debug code to find the necessary stack size
@@ -111,7 +117,7 @@ DMC_LOC void EvaluateTokenized(const int* DMC_RESTRICT TokenStream, float x, flo
     rout = STK(REDI);
 
 #ifndef __CUDACC__
-    //printf("St=%d StHigh=%d\n", St, StHigh);
+    // printf("St=%d StHigh=%d\n", St, StHigh);
 
     // Make sure we don't overflow the stack.
     if (St >= MAX_STACK) {

@@ -1,6 +1,6 @@
-// Doesn't include any of the class-based system.
-
 #pragma once
+
+// Doesn't include any of the class-based system.
 
 #include "MathHelpers.h"
 
@@ -52,168 +52,170 @@ const int MAX_VARIABLES = 3;
 
 namespace {
 
-    DMC_LOC float eAbs(const float lv)
-    {
-        return fabsf(lv);
-    }
+DMC_LOC float eAbs(const float lv)
+{
+    return fabsf(lv);
+}
 
-    DMC_LOC float eACos(const float lv)
-    {
-        return acosf(Clampf(-1.0f, lv, 1.0f));
-    }
+DMC_LOC float eACos(const float lv)
+{
+    return acosf(Clampf(-1.0f, lv, 1.0f));
+}
 
-    DMC_LOC float eAnd(const float lv, const float rv)
-    {
-        unsigned int ll = ToInt(lv);
-        unsigned int rr = ToInt(rv);
+DMC_LOC float eAnd(const float lv, const float rv)
+{
+    unsigned int ll = ToInt(lv);
+    unsigned int rr = ToInt(rv);
 
-        return ToFloat(ll & rr);
-    }
+    return ToFloat(ll & rr);
+}
 
-    DMC_LOC float eASin(const float lv)
-    {
-        return asinf(Clampf(-1.0f, lv, 1.0f));
-    }
+DMC_LOC float eASin(const float lv)
+{
+    return asinf(Clampf(-1.0f, lv, 1.0f));
+}
 
-    DMC_LOC float eATan(const float lv)
-    {
-        // This uses two fewer regs than real atan.
-        return myatan2f(lv, 1.0f);
-    }
+DMC_LOC float eATan(const float lv)
+{
+    // This uses two fewer regs than real atan.
+    return myatan2f(lv, 1.0f);
+}
 
-    DMC_LOC float eATan2(const float lv, const float rv)
-    {
-        return myatan2f(lv, rv);
-    }
+DMC_LOC float eATan2(const float lv, const float rv)
+{
+    return myatan2f(lv, rv);
+}
 
-    DMC_LOC float eBitNot(const float lv)
-    {
-        unsigned int ll = ToInt(lv);
+DMC_LOC float eBitNot(const float lv)
+{
+    unsigned int ll = ToInt(lv);
 
-        return ToFloat(~ll);
-    }
+    return ToFloat(~ll);
+}
 
-    DMC_LOC float eCbrt(const float lv)
-    {
-        return (lv > 0.0f) ? powf(lv, 1.0f / 3.0f) : 0.0f;
-    }
+DMC_LOC float eCbrt(const float lv)
+{
+    return (lv > 0.0f) ? powf(lv, 1.0f / 3.0f) : 0.0f;
+}
 
-    DMC_LOC float eClamp(const float lv)
-    {
-        return Saturate(lv);
-    }
+DMC_LOC float eClamp(const float lv)
+{
+    return Saturate(lv);
+}
 
-    DMC_LOC float eCos(const float lv)
-    {
-        return cosf(lv);
-    }
+DMC_LOC float eCos(const float lv)
+{
+    return cosf(lv);
+}
 
-    DMC_LOC float eCube(const float lv)
-    {
-        return lv*lv*lv;
-    }
+DMC_LOC float eCube(const float lv)
+{
+    return lv * lv * lv;
+}
 
-    DMC_LOC float eDiv(const float lv, const float rv)
-    {
-        return (rv != 0.0f) ? lv / rv : 0.0f;
-    }
+DMC_LOC float eDiv(const float lv, const float rv)
+{
+    return (rv != 0.0f) ? lv / rv : 0.0f;
+}
 
-    DMC_LOC float eExp(const float lv)
-    {
-        return expf(lv);
-    }
+DMC_LOC float eExp(const float lv)
+{
+    return expf(lv);
+}
 
-    DMC_LOC float eLn(const float lv)
-    {
-        return (lv == 0.0f) ? 0.0f : logf(fabsf(lv)); // Note the absolute value here.
-    }
+DMC_LOC float eLn(const float lv)
+{
+    return (lv == 0.0f) ? 0.0f : logf(fabsf(lv)); // Note the absolute value here.
+}
 
-    DMC_LOC float eMinus(const float lv, const float rv)
-    {
-        return lv - rv;
-    }
+DMC_LOC float eMinus(const float lv, const float rv)
+{
+    return lv - rv;
+}
 
-    DMC_LOC float eMod(const float lv, const float rv)
-    {
+DMC_LOC float eMod(const float lv, const float rv)
+{
 #if 0
         return (rv != 0.0f) ? fmodf(lv, rv) : 0.0f;
 #else // 2X faster on CPU; 10X on GPU
-        float quo = lv / rv;
-        int iclampquo = (int)quo; // Fails for huge numbers. Returns inf.
-        float fclampquo = (float)iclampquo;
-        float remfrac = quo - fclampquo;
-        float rem = remfrac * rv;
-        return (rv != 0.0f) ? rem : 0.0f;
+    float quo = lv / rv;
+    int iclampquo = (int)quo; // Fails for huge numbers. Returns inf.
+    float fclampquo = (float)iclampquo;
+    float remfrac = quo - fclampquo;
+    float rem = remfrac * rv;
+    return (rv != 0.0f) ? rem : 0.0f;
 #endif
-    }
+}
 
-    DMC_LOC float eMult(const float lv, const float rv)
-    {
-        return lv * rv;
-    }
+DMC_LOC float eMult(const float lv, const float rv)
+{
+    return lv * rv;
+}
 
-    DMC_LOC float eOr(const float lv, const float rv)
-    {
-        unsigned int ll = ToInt(lv);
-        unsigned int rr = ToInt(rv);
+DMC_LOC float eOr(const float lv, const float rv)
+{
+    unsigned int ll = ToInt(lv);
+    unsigned int rr = ToInt(rv);
 
-        return ToFloat(ll | rr);
-    }
+    return ToFloat(ll | rr);
+}
 
-    DMC_LOC float ePlus(const float lv, const float rv)
-    {
-        return lv + rv;
-    }
+DMC_LOC float ePlus(const float lv, const float rv)
+{
+    return lv + rv;
+}
 
-    DMC_LOC float ePow(const float lv, const float rv)
-    {
-        // If base is negative then round the exponent toward zero. Negative base to an odd power has a negative result.
-        // This should make ePow never return NaN. CUDA fast pow can't handle negative bases at all, even with whole number exponents.
-        // Fails for huge rv because the int cast yields -2B. Need a higher perf fix.
-        bool lneg = lv < 0;
-        int r = int(rv);
-        float rf = lneg ? float(r) : rv;
-        float res = powf(fabsf(lv), rf);
-        if (lneg && (r & 1)) return -res; // Negative base to an odd power has a negative result.
-        else return res;
-    }
+DMC_LOC float ePow(const float lv, const float rv)
+{
+    // If base is negative then round the exponent toward zero. Negative base to an odd power has a negative result.
+    // This should make ePow never return NaN. CUDA fast pow can't handle negative bases at all, even with whole number exponents.
+    // Fails for huge rv because the int cast yields -2B. Need a higher perf fix.
+    bool lneg = lv < 0;
+    int r = int(rv);
+    float rf = lneg ? float(r) : rv;
+    float res = powf(fabsf(lv), rf);
+    if (lneg && (r & 1))
+        return -res; // Negative base to an odd power has a negative result.
+    else
+        return res;
+}
 
-    DMC_LOC float eRound(const float lv)
-    {
-        return (lv < 0.5f) ? 0.0f : 1.0f;
-    }
+DMC_LOC float eRound(const float lv)
+{
+    return (lv < 0.5f) ? 0.0f : 1.0f;
+}
 
-    DMC_LOC float eSin(const float lv)
-    {
-        return sinf(lv);
-    }
+DMC_LOC float eSin(const float lv)
+{
+    return sinf(lv);
+}
 
-    DMC_LOC float eSqr(const float lv)
-    {
-        return lv*lv;
-    }
+DMC_LOC float eSqr(const float lv)
+{
+    return lv * lv;
+}
 
-    DMC_LOC float eSqrt(const float lv)
-    {
-        return sqrtf(fabsf(lv)); // Note the absolute value here.
-    }
+DMC_LOC float eSqrt(const float lv)
+{
+    return sqrtf(fabsf(lv)); // Note the absolute value here.
+}
 
-    DMC_LOC float eTan(const float lv)
-    {
-        return tanf(eMod(lv, E_PI)); // Note the fmod here. tan is very unstable without it.
-    }
+DMC_LOC float eTan(const float lv)
+{
+    return tanf(eMod(lv, E_PI)); // Note the fmod here. tan is very unstable without it.
+}
 
-    DMC_LOC float eUnaryMinus(const float lv)
-    {
-        return -lv;
-    }
+DMC_LOC float eUnaryMinus(const float lv)
+{
+    return -lv;
+}
 
-    DMC_LOC float eXOr(const float lv, const float rv)
-    {
-        unsigned int ll = ToInt(lv);
-        unsigned int rr = ToInt(rv);
+DMC_LOC float eXOr(const float lv, const float rv)
+{
+    unsigned int ll = ToInt(lv);
+    unsigned int rr = ToInt(rv);
 
-        return ToFloat(ll ^ rr);
-    }
+    return ToFloat(ll ^ rr);
+}
 
-};
+}; // namespace

@@ -9,10 +9,10 @@ class Evolver
 {
 public:
     Evolver(AutoScorer* Scorer_);
-	~Evolver();
+    ~Evolver();
 
     // Create and return a new random individual, with parents from the span
-    Individual::shp Generate(Population::iterator& beginParent, Population::iterator& endParent, bool autoEvolve);
+    Individual::shp Generate(const Population::iterator beginParent, const Population::iterator endParent, bool autoEvolve);
 
     // Evolve one generation
     void EvolveGeneration();
@@ -22,17 +22,17 @@ public:
     AutoScorer* Scorer() const { return m_Scorer; }
     void Scorer(AutoScorer* val) { m_Scorer = val; }
 
-	void ResetScoreStats() { m_maxScore = 0; }
+    void ResetScoreStats() { m_maxScore = 0; }
 
 private:
-	Individual::shp ChooseParent(Population::iterator& beginParent, Population::iterator& endParent, bool autoEvolve);
+    Individual::shp ChooseParent(const Population::iterator beginParent, const Population::iterator endParent, bool autoEvolve);
 
     float RandCoord();
-	void computeScoreStats(Population::iterator& beginParent, Population::iterator& endParent);
+    void computeScoreStats(const Population::iterator beginParent, const Population::iterator endParent);
 
     AutoScorer* m_Scorer;
-    int m_indivsCreated; // How many individuals have been evolved
-    size_t m_maxZooSize; // How many individuals to allow in the zoo
+    int m_indivsCreated;  // How many individuals have been evolved
+    size_t m_maxZooSize;  // How many individuals to allow in the zoo
     int m_childrenPerGen; // How many individuals to move from children to zoo each generation
-	float m_totalScore, m_maxScore, m_minScore;
+    float m_totalScore, m_maxScore, m_minScore;
 };

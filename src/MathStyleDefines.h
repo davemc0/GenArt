@@ -16,17 +16,9 @@
 
 enum ColorMapOrderings_t { REORDER_SHORT = 0, REORDER_LONG = 1, REORDER_RANDOM = 2, REORDER_LUM = 3, NUM_REORDERS = 4 };
 
-static const char *ColorMapOrderings[NUM_REORDERS] = { "low contrast", "high contrast", "random", "luminance" };
+static const char* ColorMapOrderings[NUM_REORDERS] = {"low contrast", "high contrast", "random", "luminance"};
 
 // The various color spaces
-enum ColorSpace_t {
-    SPACE_RGB = 0,
-    SPACE_TONEMAP_RGB = 1,
-    SPACE_YCRCB = 2,
-    SPACE_TONEMAP_HSV = 3,
-    SPACE_COLMAP = 4,
-    SPACE_TONEMAP_COLMAP = 5,
-    NUM_COLORSPACES = 6
-};
+enum ColorSpace_t { SPACE_RGB = 0, SPACE_TONEMAP_RGB = 1, SPACE_YCRCB = 2, SPACE_TONEMAP_HSV = 3, SPACE_COLMAP = 4, SPACE_TONEMAP_COLMAP = 5, NUM_COLORSPACES = 6 };
 
-static const char* ColorSpaceNames[NUM_COLORSPACES] = { "RGB", "Toned RGB", "YCrCb", "Toned HSV", "ColorMap", "Toned ColorMap" };
+static const char* ColorSpaceNames[NUM_COLORSPACES] = {"RGB", "Toned RGB", "YCrCb", "Toned HSV", "ColorMap", "Toned ColorMap"};

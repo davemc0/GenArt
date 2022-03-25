@@ -11,8 +11,8 @@ public:
 
     std::string Print(int pstyle) const; // Plus, Minus, Mult are pure operators.
 
-    int preTokenStream(int *TokenStream, const int max_len) const;
-    int postTokenStream(int *TokenStream, const int max_len) const;
+    int preTokenStream(int* TokenStream, const int max_len) const;
+    int postTokenStream(int* TokenStream, const int max_len) const;
 
 protected:
     // Shared optimization steps; called only by Opt function of subclasses.
@@ -22,7 +22,7 @@ protected:
     void init(Expr* E1, Expr* E2);
 
 private:
-    Expr* Mutate(const int prob, const int siz, const float ConstPerturb, const VarVals_t *VV);
+    Expr* Mutate(const int prob, const int siz, const float ConstPerturb, const VarVals_t* VV);
 
     bool isequal(const Expr* E) const;
     bool isless(const Expr* E) const;
@@ -43,10 +43,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline And() { count = 0; }
     inline And(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -63,10 +63,10 @@ public:
     inline std::string getName() const { return name; }
     inline std::string getFuncName() const { return fname; }
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline ATan2() { count = 0; }
     inline ATan2(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -86,10 +86,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Div() { count = 0; }
     inline Div(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -106,19 +106,19 @@ public:
     inline std::string getName() const { return name; }
     inline std::string getFuncName() const { return fname; }
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     // This one is unique. Can't use the BinaryExpr implementation.
-    int postTokenStream(int *TokenStream, const int max_len) const;
+    int postTokenStream(int* TokenStream, const int max_len) const;
 
     inline IFS() { count = 0; }
     inline IFS(Expr* E1, Expr* E2) { init(E1, E2); }
 
 private:
-    float IFSVal(VarVals_t *VV) const;
+    float IFSVal(VarVals_t* VV) const;
 };
 
 class Minus : public BinaryExpr
@@ -135,10 +135,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Minus() { count = 0; }
     inline Minus(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -158,10 +158,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Mod() { count = 0; }
     inline Mod(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -182,10 +182,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Mult() { count = 0; }
     inline Mult(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -206,10 +206,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Or() { count = 0; }
     inline Or(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -230,10 +230,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Plus() { count = 0; }
     inline Plus(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -250,10 +250,10 @@ public:
     inline std::string getName() const { return name; }
     inline std::string getFuncName() const { return fname; }
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline Pow() { count = 0; }
     inline Pow(Expr* E1, Expr* E2) { init(E1, E2); }
@@ -274,10 +274,10 @@ public:
 
     std::string Print(int pstyle) const;
 
-    float Eval(const VarVals_t *VV = NULL) const;
-    interval Ival(const opInfo &opI, const interval &lv = interval(), const interval &rv = interval()) const;
+    float Eval(const VarVals_t* VV = NULL) const;
+    interval Ival(const opInfo& opI, const interval& lv = interval(), const interval& rv = interval()) const;
     Expr* Copy() const;
-    Expr* Opt(const opInfo &opI);
+    Expr* Opt(const opInfo& opI);
 
     inline XOr() { count = 0; }
     inline XOr(Expr* E1, Expr* E2) { init(E1, E2); }

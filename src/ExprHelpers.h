@@ -13,25 +13,24 @@ struct VarVals_t
     std::vector<std::string> names; // XXX Should this be static?
     std::vector<float> vals;
 
-    VarVals_t() { }
+    VarVals_t() {}
     VarVals_t(const int n);
 };
 
 struct opInfo
 {
     // For numerical optimization
-    VarVals_t vn;        // Used only for variable names and count of variables
-    interval spans[VarVals_t::NUM_VARS]; 
-    float maxAbsErr;     // All values on interval must be within this percent difference to optimize
-    int steps;           // Number of samples across the interval to compare per variable
-    bool stopAtMaxErr;   // True to stop sampling once the interval is larger than MaxErr
-    int phase;           // Optimization phase number (0,1,2,3)
-    bool swapSymmetric;  // True to swap left and right children of symmetric binary operators
+    VarVals_t vn; // Used only for variable names and count of variables
+    interval spans[VarVals_t::NUM_VARS];
+    float maxAbsErr;    // All values on interval must be within this percent difference to optimize
+    int steps;          // Number of samples across the interval to compare per variable
+    bool stopAtMaxErr;  // True to stop sampling once the interval is larger than MaxErr
+    int phase;          // Optimization phase number (0,1,2,3)
+    bool swapSymmetric; // True to swap left and right children of symmetric binary operators
 };
 
 // When to do a given optimization transformation
-enum opPrio
-{
+enum opPrio {
     AA, // Major op count improvement
     AB, // Minor op count improvement
     AI, // Interval-based op count improvement
@@ -46,8 +45,7 @@ enum opPrio
 };
 
 // How to do infix printing
-enum prStyle_t
-{
+enum prStyle_t {
     INFIX = 0,          // infix with name, e.g. ---X
     FUNC_EVAL = 1,      // Functions are printed as e.g. eASin vs. asin
     OP_EVAL = 2,        // Operators are printed as e.g. eUnaryMinus(X) vs. -X

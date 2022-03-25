@@ -1,4 +1,5 @@
 #include "Interval.h"
+
 #include "MathHelpers.h"
 
 #include <algorithm>
@@ -12,7 +13,7 @@ interval::interval()
     upper = -infinity();
 }
 
-interval::interval(const float v) : lower(v), upper(v) { }
+interval::interval(const float v) : lower(v), upper(v) {}
 
 interval::interval(const float v0, const float v1)
 {
