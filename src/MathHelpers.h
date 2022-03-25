@@ -94,10 +94,7 @@ DMC_LOC unsigned int ToInt(const float l)
     return (unsigned int)(Sc);
 }
 
-DMC_LOC float ToFloat(const unsigned int l)
-{
-    return float(l & 0xffff) / 65535.0f;
-}
+DMC_LOC float ToFloat(const unsigned int l) { return float(l & 0xffff) / 65535.0f; }
 
 DMC_LOC unsigned int FindLeadingOnes(unsigned int v)
 {
@@ -114,7 +111,7 @@ DMC_LOC float myatan2f(float y, float x)
     float angle;
     const float pi14 = E_PI / 4;
     const float pi34 = 3 * pi14;
-    float abs_y = fabsf(y) + 1e-10f; // kludge to prevent 0/0 condition
+    float abs_y = fabsf(y) + 1e-10f; // Kludge to prevent 0/0 condition
 
     if (x >= 0) {
         float r = (x - abs_y) / (x + abs_y);
@@ -124,29 +121,6 @@ DMC_LOC float myatan2f(float y, float x)
         angle = pi34 - pi14 * r;
     }
 
-    return y < 0 ? (-angle) : angle; // negate if in quad III or IV
+    return y < 0 ? (-angle) : angle; // Negate if in quad III or IV
 }
-
-// Adequate for real bases on 0..1000 and exponents on -10..10
-// Error is up to 30%. Artifacts are that curves in IFS images are jaggy.
-// http://martin.ankerl.com/2012/01/25/optimized-approximative-pow-in-c-and-cpp/
-// Actually slower than real powf on CUDA. Why?
-DMC_LOC float mypowf(float a, float b)
-{
-    const int V = 1064861783; // Empirical estimate. For double precision it's 1072632447.
-
-    union
-    {
-        float f;
-        int x;
-    } u = {a};
-
-    int t = u.x - V;
-    float bt = b * t;
-    int bti = (int)bt;
-    u.x = bti + V;
-
-    return u.f;
-}
-
 }; // namespace

@@ -5,8 +5,7 @@
 
 class AutoScorer;
 
-class Evolver
-{
+class Evolver {
 public:
     Evolver(AutoScorer* Scorer_);
     ~Evolver();

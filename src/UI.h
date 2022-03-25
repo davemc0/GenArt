@@ -5,8 +5,7 @@
 
 #include <deque>
 
-class UI
-{
+class UI {
 public:
     UI(int& argc, char** argv);
 

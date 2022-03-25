@@ -37,9 +37,9 @@ extern Style* SEng;
 // Horizontal lines, commonly found in landscape photography, gives the impression of calm, tranquility, and space.
 // An image filled with strong vertical lines tends to have the impression of height, and grandeur.
 // Tightly angled convergent lines give a dynamic, lively, and active effect to the image.
-// Viewpoint is very important when dealing with lines particularly in photography, because every different perspective elicits a different response to the photograph.
+// Viewpoint is very important when dealing with lines because every different perspective elicits a different response to the photograph.
 // Dark colors on the bottom and light on the top gives a feeling of solidity.
-// Horizontal lines on the bottom and vertical on the top gives a feeling of solidity,.
+// Horizontal lines on the bottom and vertical on the top gives a feeling of solidity.
 
 // Try a Hough transform? Use this to determine a vanishing point
 
@@ -161,7 +161,8 @@ void Evolver::EvolveGeneration()
     // Delete excess Zoo
     Pop->DeleteSpanOfIndividuals(m_maxZooSize, 0);
 
-    std::cerr << "IndivsCreated = " << m_indivsCreated << " Max score = " << Pop->getParents(0)->GetScore() << " GenScore = " << genScore << " Variability = " << SEng->getVariability() << std::endl;
+    std::cerr << "IndivsCreated = " << m_indivsCreated << " Max score = " << Pop->getParents(0)->GetScore() << " GenScore = " << genScore
+              << " Variability = " << SEng->getVariability() << std::endl;
 }
 
 float scoreFunc(const float s, const float mn, const float mx)
@@ -193,7 +194,7 @@ Individual::shp Evolver::ChooseParent(const Population::iterator beginParent, co
         // This is expensive. Don't do it once per Indiv created.
         if (m_maxScore == 0) computeScoreStats(beginParent, endParent);
 
-        float r = DRandf() * m_totalScore;
+        float r = frand() * m_totalScore;
         float totalScore = 0;
         for (auto ind = beginParent; ind != endParent; ind++) {
             float sc = scoreFunc((*ind)->Score, m_minScore, m_maxScore);

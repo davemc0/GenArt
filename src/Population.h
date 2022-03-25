@@ -8,8 +8,7 @@ class Style;
 
 enum SortCriterion { SORTBY_SCORE = 0, SORTBY_IDNUM = 1, SORTBY_COLORSPACE = 2, SORTBY_RENDERTIME = 3, SORTBY__MAX = 4 };
 
-class Population
-{
+class Population {
 public:
     Population();
     ~Population() {}
@@ -47,7 +46,7 @@ public:
 
     void DeleteSpanOfIndividuals(size_t index, size_t count = 1, bool AmParent = false, bool AmChild = false); // Delete count individuals, starting with index
 
-    void SavePopulation(const std::string & outFNameBase, Style* style);
+    void SavePopulation(const std::string& outFNameBase, Style* style);
 
     void Sort(const SortCriterion SortBy, bool Z = true, bool P = true, bool C = false);
 

@@ -6,8 +6,7 @@
 
 // All the info about the variables
 // This is mostly just passed on the stack but is accessed by a Var expression.
-struct VarVals_t
-{
+struct VarVals_t {
     static const int NUM_VARS = 3;
 
     std::vector<std::string> names; // XXX Should this be static?
@@ -17,8 +16,7 @@ struct VarVals_t
     VarVals_t(const int n);
 };
 
-struct opInfo
-{
+struct opInfo {
     // For numerical optimization
     VarVals_t vn; // Used only for variable names and count of variables
     interval spans[VarVals_t::NUM_VARS];
@@ -46,7 +44,7 @@ enum opPrio {
 
 // How to do infix printing
 enum prStyle_t {
-    INFIX = 0,          // infix with name, e.g. ---X
+    INFIX = 0,          // Infix with name, e.g. ---X
     FUNC_EVAL = 1,      // Functions are printed as e.g. eASin vs. asin
     OP_EVAL = 2,        // Operators are printed as e.g. eUnaryMinus(X) vs. -X
     OP_EVAL_IMPURE = 4, // Operators that exactly match C++ semantics are printed as operators, e.g. -X

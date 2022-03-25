@@ -53,7 +53,7 @@ void ImageSimilarityAutoScorer::init(Individual* Ind)
 
     if (Ind->ThumbIm()->w() != TargetImg->w() || Ind->ThumbIm()->h() != TargetImg->h()) {
         uc4Image* newTarg = new uc4Image;
-        Resample(*newTarg, *TargetImg, Ind->ThumbIm()->w(), Ind->ThumbIm()->h());
+        Resize(*newTarg, *TargetImg, Ind->ThumbIm()->w(), Ind->ThumbIm()->h());
         // std::cerr << newTarg->w() << 'x' << newTarg->h() << '\n';
         // std::cerr << Ind->ThumbIm()->w() << 'x' << Ind->ThumbIm()->h() << '\n';
 
@@ -62,18 +62,15 @@ void ImageSimilarityAutoScorer::init(Individual* Ind)
     }
 }
 
-ImageSimilarityAutoScorer::~ImageSimilarityAutoScorer()
-{
-    delete TargetImg;
-}
+ImageSimilarityAutoScorer::~ImageSimilarityAutoScorer() { delete TargetImg; }
 
 int pixDiff(const uc4Pixel& p0, const uc4Pixel& p1)
 {
     int errcount;
 
-    errcount = dmcm::Sqr(int(p0.r()) - int(p1.r()));
-    errcount += dmcm::Sqr(int(p0.g()) - int(p1.g()));
-    errcount += dmcm::Sqr(int(p0.b()) - int(p1.b()));
+    errcount = sqr(int(p0.r()) - int(p1.r()));
+    errcount += sqr(int(p0.g()) - int(p1.g()));
+    errcount += sqr(int(p0.b()) - int(p1.b()));
 
     return errcount;
 }
@@ -87,7 +84,8 @@ void ImageSimilarityAutoScorer::ComputeScore(Individual* Ind)
 
     if (!TargetImg) init(Ind);
 
-    if (Ind->ThumbImD()->w() != TargetImg->w() || Ind->ThumbImD()->h() != TargetImg->h()) // Reshape or synthesize a target if there's not one defined of the right size
+    if (Ind->ThumbImD()->w() != TargetImg->w() ||
+        Ind->ThumbImD()->h() != TargetImg->h()) // Reshape or synthesize a target if there's not one defined of the right size
         init(Ind);
 
     ASSERT_R(Ind->ThumbImD()->size() == TargetImg->size());

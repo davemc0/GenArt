@@ -2,8 +2,7 @@
 
 #include "Expr.h"
 
-class BinaryExpr : public Expr
-{
+class BinaryExpr : public Expr {
 public:
     inline bool isSymmetric() const { return false; }
     inline int getPrecedence() const { return 2; }
@@ -28,8 +27,7 @@ private:
     bool isless(const Expr* E) const;
 };
 
-class And : public BinaryExpr
-{
+class And : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -52,8 +50,7 @@ public:
     inline And(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class ATan2 : public BinaryExpr
-{
+class ATan2 : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -72,8 +69,7 @@ public:
     inline ATan2(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Div : public BinaryExpr
-{
+class Div : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -95,8 +91,7 @@ public:
     inline Div(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class IFS : public BinaryExpr
-{
+class IFS : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -121,8 +116,7 @@ private:
     float IFSVal(VarVals_t* VV) const;
 };
 
-class Minus : public BinaryExpr
-{
+class Minus : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -144,8 +138,7 @@ public:
     inline Minus(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Mod : public BinaryExpr
-{
+class Mod : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -167,8 +160,7 @@ public:
     inline Mod(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Mult : public BinaryExpr
-{
+class Mult : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -191,8 +183,7 @@ public:
     inline Mult(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Or : public BinaryExpr
-{
+class Or : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -215,8 +206,7 @@ public:
     inline Or(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Plus : public BinaryExpr
-{
+class Plus : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -239,8 +229,7 @@ public:
     inline Plus(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class Pow : public BinaryExpr
-{
+class Pow : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -259,8 +248,7 @@ public:
     inline Pow(Expr* E1, Expr* E2) { init(E1, E2); }
 };
 
-class XOr : public BinaryExpr
-{
+class XOr : public BinaryExpr {
 public:
     static std::string name;
     static std::string fname;

@@ -129,6 +129,9 @@ Expr* ReadExpr(const std::string Str, std::string& remain, const VarVals_t* VV)
         }
 
         // It must be a constant.
+        size_t num = funame.find_first_of(std::string("-0123456789."));
+        if (num != 0) throw DMcError("Unknown token '" + funame + "' in expression: " + Str);
+
         remain = nokey;
         return new Const((float)atof(funame.c_str()));
     }
@@ -178,8 +181,7 @@ bool DEBUGprint = false;
 
 namespace {
 
-class SampleSet
-{
+class SampleSet {
 public:
     SampleSet() { init(); }
 
@@ -279,7 +281,6 @@ private:
         }
     }
 };
-
 }; // namespace
 
 interval sampleIval(const Expr* E, const opInfo& opI, const interval& lv, const interval& rv)
@@ -327,7 +328,8 @@ interval sampleIval(const Expr* E, const opInfo& opI, const interval& lv, const 
 
                 float v = E->Eval(&VV);
                 if (IsNaN(v)) {
-                    if (DEBUGprint) std::cerr << "f(" << VV.vals[0] << "," << VV.vals[1] << "," << VV.vals[2] << ") = " << v << " => " << tostring(iout) << '\n';
+                    if (DEBUGprint)
+                        std::cerr << "f(" << VV.vals[0] << "," << VV.vals[1] << "," << VV.vals[2] << ") = " << v << " => " << tostring(iout) << '\n';
                     continue;
                 }
 
@@ -345,7 +347,7 @@ interval sampleIval(const Expr* E, const opInfo& opI, const interval& lv, const 
 }
 
 // Optimization:
-// External code calls the SymOptimize() entry point, which makes a copy and loops over the optimizer.
+// External code calls this Optimize() entry point, which makes a copy and loops over the optimizer.
 // Optimize bottom-up: Calls Opt() on the root. Every Opt() function optimizes its children first.
 // This gives optimized subtrees to work with.
 // Opt() returns a pointer to the replacement or NULL if no optimization happened.
@@ -613,15 +615,9 @@ Expr* ReplaceVars(Expr* E, const VarVals_t& reVV)
     }
 }
 
-Expr* MakeConst(const float v)
-{
-    return new Const(v);
-}
+Expr* MakeConst(const float v) { return new Const(v); }
 
-bool IsConst(const Expr* E)
-{
-    return typeid(*E) == typeid(Const);
-}
+bool IsConst(const Expr* E) { return typeid(*E) == typeid(Const); }
 
 namespace {
 Expr* FixIFS(Expr* E, bool InIFS)

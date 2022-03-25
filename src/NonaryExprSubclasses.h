@@ -5,16 +5,14 @@
 
 #include "Expr.h"
 
-class NonaryExpr : public Expr
-{
+class NonaryExpr : public Expr {
 public:
     inline bool isSymmetric() const { return true; }
     inline int getPrecedence() const { return 9; }
     inline int getArity() const { return 0; }
 };
 
-class Const : public NonaryExpr
-{
+class Const : public NonaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -56,8 +54,7 @@ private:
     float val;
 };
 
-class Var : public NonaryExpr
-{
+class Var : public NonaryExpr {
 public:
     static std::string name; // The static name of the function: "Var"
     static std::string fname;

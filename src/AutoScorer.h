@@ -4,27 +4,23 @@
 
 #include <Image/tImage.h>
 
-class AutoScorer
-{
+class AutoScorer {
 public:
     // Compute the score and store it in the individual
     virtual void ComputeScore(Individual* Ind) = 0;
 };
 
-class ColorfulnessAutoScorer : public AutoScorer
-{
+class ColorfulnessAutoScorer : public AutoScorer {
 public:
     void ComputeScore(Individual* Ind);
 };
 
-class RandomAutoScorer : public AutoScorer
-{
+class RandomAutoScorer : public AutoScorer {
 public:
     void ComputeScore(Individual* Ind);
 };
 
-class ImageSimilarityAutoScorer : public AutoScorer
-{
+class ImageSimilarityAutoScorer : public AutoScorer {
 public:
     ImageSimilarityAutoScorer(uc4Image* Img);
     ~ImageSimilarityAutoScorer();

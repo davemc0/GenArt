@@ -4,10 +4,7 @@
 #include <map>
 #include <string>
 
-Counters::Counters() : total(0)
-{
-    Counts = new std::map<std::string, int>;
-}
+Counters::Counters() : total(0) { Counts = new std::map<std::string, int>; }
 
 Counters::~Counters()
 {

@@ -11,10 +11,7 @@
 
 #include <iostream>
 
-CUDARender::CUDARender(const int deviceId_) : m_deviceId(deviceId_)
-{
-    setCUDADevice(m_deviceId);
-}
+CUDARender::CUDARender(const int deviceId_) : m_deviceId(deviceId_) { setCUDADevice(m_deviceId); }
 
 MathStyleCUDARender::MathStyleCUDARender(const int deviceId_) : CUDARender(deviceId_)
 {
@@ -61,7 +58,7 @@ void MathStyleCUDARender::Render(Individual* ind_, uc4DImage* Im, const int w_, 
     }
 
     CUDA_SAFE_CALL(cudaMemcpyToArray(m_ColorMapCUDAArray, 0, 0, TmpCMap, sizeof(TmpCMap), cudaMemcpyHostToDevice));
-    loadColorMapTexture(m_ColorMapCUDAArray);
+    m_ColorMapTexObj = loadColorMapTexture(m_ColorMapCUDAArray);
 
     ////////////////////////////////////////////
     // Set up the tokenized expressions
@@ -90,7 +87,8 @@ void MathStyleCUDARender::Render(Individual* ind_, uc4DImage* Im, const int w_, 
     // Launch the render as an async series of kernel launches to allow user interaction during long renders
     int grids = 0;
     for (int yofs = 0; yofs < h_; yofs += GridHgtInPix) {
-        InvokeRenderKernel(uc4DevPtr, Im->Pitch(), w_, h_, GridHgtInPix, yofs, ind->BoxWid, ind->Xmin, ind->Ymin, Q_.MinSamples, ind->ColorSpace);
+        InvokeRenderKernel(uc4DevPtr, Im->Pitch(), w_, h_, GridHgtInPix, yofs, ind->BoxWid, ind->Xmin, ind->Ymin, Q_.MinSamples, m_ColorMapTexObj,
+                           ind->ColorSpace);
         checkCUDAError("InvokeRenderKernel");
         // std::cerr << '.';
         grids++;
@@ -110,7 +108,7 @@ void MathStyleCUDARender::InitSampleTable()
     // A table of random offsets to add to the table of sample locations
     ASSERT_R(SampTab.TABLE_SIZE == NUM_SAMPLE_LOCS);
     float RandTable[NUM_SAMPLE_LOCS * 2];
-    for (int i = 0; i < NUM_SAMPLE_LOCS * 2; i++) RandTable[i] = DRandf(0, 1);
+    for (int i = 0; i < NUM_SAMPLE_LOCS * 2; i++) RandTable[i] = frand(0, 1);
 
     ASSERT_R(sizeof(RandTable) == sizeof(SampTab.tab));
     ASSERT_R(sizeof(RandTable) == sizeof(float2) * NUM_SAMPLE_LOCS);
@@ -208,18 +206,18 @@ int MathStyleCUDARender::getGridHeight(int w, int h, float estOpsPerSample, int 
         int iGrids = (int)(Grids + 0.5f);
         if (iGrids < 1) iGrids = 1;
         float GridHgtInBlocks = HgtInBlocks / (float)iGrids;
-        int iGridHgtInBlocks = (int)GridHgtInBlocks; // round down
+        int iGridHgtInBlocks = (int)GridHgtInBlocks; // Round down
         GridHgtInPix = iGridHgtInBlocks * BLOCKDIM_Y;
-        while (iGrids * GridHgtInPix < h) GridHgtInPix += BLOCKDIM_Y; // round up if necessary
+        while (iGrids * GridHgtInPix < h) GridHgtInPix += BLOCKDIM_Y; // Round up if necessary
         ASSERT_R(iGrids * GridHgtInPix >= h);
     } else { // Don't care so much about the correct number of grids. Try to save work. Round GridHgtInBlocks up so grids goes down.
         float GridHgtInBlocks = HgtInBlocks / Grids;
-        int iGridHgtInBlocks = (int)(GridHgtInBlocks + 0.99f); // round up
+        int iGridHgtInBlocks = (int)(GridHgtInBlocks + 0.99f); // Round up
         GridHgtInPix = iGridHgtInBlocks * BLOCKDIM_Y;
         ASSERT_R(GridHgtInPix > 0);
         int iGrids = (h + GridHgtInPix - 1) / GridHgtInPix;
         ASSERT_R(iGrids * GridHgtInPix >= h);
-        while (iGrids * GridHgtInPix - h >= iGrids * BLOCKDIM_Y) GridHgtInPix -= BLOCKDIM_Y; // round down if possible
+        while (iGrids * GridHgtInPix - h >= iGrids * BLOCKDIM_Y) GridHgtInPix -= BLOCKDIM_Y; // Round down if possible
     }
 
     return GridHgtInPix;
@@ -228,4 +226,5 @@ int MathStyleCUDARender::getGridHeight(int w, int h, float estOpsPerSample, int 
 void MathStyleCUDARender::freeArray()
 {
     CUDA_SAFE_CALL(cudaFreeArray(m_ColorMapCUDAArray));
+    CUDA_SAFE_CALL(cudaDestroyTextureObject(m_ColorMapTexObj));
 }

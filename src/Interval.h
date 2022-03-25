@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-struct interval
-{
+struct interval {
     float lower, upper;
 
     interval();

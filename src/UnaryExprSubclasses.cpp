@@ -86,10 +86,7 @@ int UnaryExpr::postTokenStream(int* TokenStream, const int max_len) const
     return cnt + 1;
 }
 
-bool UnaryExpr::isequal(const Expr* E) const
-{
-    return typeid(*E) == typeid(*this) && left->isequal(E->left);
-}
+bool UnaryExpr::isequal(const Expr* E) const { return typeid(*E) == typeid(*this) && left->isequal(E->left); }
 
 bool UnaryExpr::isless(const Expr* E) const
 {
@@ -123,7 +120,7 @@ Expr* UnaryExpr::OptHelp(const opInfo& opI)
     // If interval is flat over the range, return a constant with the same value as this expression.
     if (ivl.span() <= opI.maxAbsErr && FOG(AI)) {
         // std::cerr << "\nUConst: " << count << tostring(ivl) << ' ' << Print(PREFIX) << '\n';
-        ivl = interval(ivl.lower); // ivl is a return value, so make it accurate.
+        ivl = interval(ivl.lower); // Ivl is a return value, so make it accurate.
         return new Const(ivl.lower);
     }
 
@@ -136,7 +133,7 @@ void UnaryExpr::init(Expr* E)
     left = E;
     count = left->size() + 1;
     hasVars = left->hasVars;
-    // ivl will still be empty until Opt or Ival is called.
+    // Ivl will still be empty until Opt or Ival is called.
 }
 
 Expr* UnaryExpr::Mutate(const int prob, const int siz, const float ConstPerturb, const VarVals_t* VV)
@@ -175,10 +172,7 @@ Expr* UnaryExpr::Mutate(const int prob, const int siz, const float ConstPerturb,
     return NULL;
 }
 
-float Abs::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eAbs(left->Eval(VV));
-}
+float Abs::Eval(const VarVals_t* VV /*= NULL*/) const { return eAbs(left->Eval(VV)); }
 
 interval Abs::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -218,10 +212,7 @@ Expr* Abs::Opt(const opInfo& opI)
     return E;
 }
 
-float ACos::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eACos(left->Eval(VV));
-}
+float ACos::Eval(const VarVals_t* VV /*= NULL*/) const { return eACos(left->Eval(VV)); }
 
 interval ACos::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -246,10 +237,7 @@ Expr* ACos::Opt(const opInfo& opI)
     return E;
 }
 
-float ASin::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eASin(left->Eval(VV));
-}
+float ASin::Eval(const VarVals_t* VV /*= NULL*/) const { return eASin(left->Eval(VV)); }
 
 interval ASin::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -273,10 +261,7 @@ Expr* ASin::Opt(const opInfo& opI)
     return E;
 }
 
-float ATan::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eATan(left->Eval(VV));
-}
+float ATan::Eval(const VarVals_t* VV /*= NULL*/) const { return eATan(left->Eval(VV)); }
 
 interval ATan::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -314,10 +299,7 @@ std::string BitNot::Print(int pstyle) const
     }
 }
 
-float BitNot::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eBitNot(left->Eval(VV));
-}
+float BitNot::Eval(const VarVals_t* VV /*= NULL*/) const { return eBitNot(left->Eval(VV)); }
 
 interval BitNot::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -351,10 +333,7 @@ Expr* BitNot::Opt(const opInfo& opI)
     return E;
 }
 
-float Cbrt::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eCbrt(left->Eval(VV));
-}
+float Cbrt::Eval(const VarVals_t* VV /*= NULL*/) const { return eCbrt(left->Eval(VV)); }
 
 interval Cbrt::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -383,10 +362,7 @@ Expr* Cbrt::Opt(const opInfo& opI)
     return E;
 }
 
-float Clamp::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eClamp(left->Eval(VV));
-}
+float Clamp::Eval(const VarVals_t* VV /*= NULL*/) const { return eClamp(left->Eval(VV)); }
 
 interval Clamp::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -421,10 +397,7 @@ Expr* Clamp::Opt(const opInfo& opI)
     return E;
 }
 
-float Cos::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eCos(left->Eval(VV));
-}
+float Cos::Eval(const VarVals_t* VV /*= NULL*/) const { return eCos(left->Eval(VV)); }
 
 interval Cos::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -451,10 +424,7 @@ Expr* Cos::Opt(const opInfo& opI)
     return E;
 }
 
-float Cube::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eCube(left->Eval(VV));
-}
+float Cube::Eval(const VarVals_t* VV /*= NULL*/) const { return eCube(left->Eval(VV)); }
 
 interval Cube::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -483,10 +453,7 @@ Expr* Cube::Opt(const opInfo& opI)
     return E;
 }
 
-float Exp::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eExp(left->Eval(VV));
-}
+float Exp::Eval(const VarVals_t* VV /*= NULL*/) const { return eExp(left->Eval(VV)); }
 
 interval Exp::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -514,10 +481,7 @@ Expr* Exp::Opt(const opInfo& opI)
     return E;
 }
 
-float Ln::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eLn(left->Eval(VV));
-}
+float Ln::Eval(const VarVals_t* VV /*= NULL*/) const { return eLn(left->Eval(VV)); }
 
 interval Ln::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -544,16 +508,13 @@ Expr* Ln::Opt(const opInfo& opI)
     // ln cbrt x => ln pow x 0.33333 => * 0.33333 ln x, but this misses clamping x to 0 in cbrt.
     if (typeid(*left) == typeid(Pow) && FOG(NL)) return new Mult(left->GrabR(), new Ln(left->GrabL()));
 
-    if (typeid(*left) == typeid(Abs) && FOG(AB)) // eLn implicitly does Abs.
+    if (typeid(*left) == typeid(Abs) && FOG(AB)) // ELn implicitly does Abs.
         return new Ln(left->GrabL());
 
     return E;
 }
 
-float Round::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eRound(left->Eval(VV));
-}
+float Round::Eval(const VarVals_t* VV /*= NULL*/) const { return eRound(left->Eval(VV)); }
 
 interval Round::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -578,10 +539,7 @@ Expr* Round::Opt(const opInfo& opI)
     return E;
 }
 
-float Sin::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eSin(left->Eval(VV));
-}
+float Sin::Eval(const VarVals_t* VV /*= NULL*/) const { return eSin(left->Eval(VV)); }
 
 interval Sin::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -607,10 +565,7 @@ Expr* Sin::Opt(const opInfo& opI)
     return E;
 }
 
-float Sqr::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eSqr(left->Eval(VV));
-}
+float Sqr::Eval(const VarVals_t* VV /*= NULL*/) const { return eSqr(left->Eval(VV)); }
 
 interval Sqr::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -649,10 +604,7 @@ Expr* Sqr::Opt(const opInfo& opI)
     return E;
 }
 
-float Sqrt::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eSqrt(left->Eval(VV));
-}
+float Sqrt::Eval(const VarVals_t* VV /*= NULL*/) const { return eSqrt(left->Eval(VV)); }
 
 interval Sqrt::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -683,10 +635,7 @@ Expr* Sqrt::Opt(const opInfo& opI)
     return E;
 }
 
-float Tan::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eTan(left->Eval(VV));
-}
+float Tan::Eval(const VarVals_t* VV /*= NULL*/) const { return eTan(left->Eval(VV)); }
 
 interval Tan::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -727,10 +676,7 @@ std::string UnaryMinus::Print(int pstyle) const
     }
 }
 
-float UnaryMinus::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eUnaryMinus(left->Eval(VV));
-}
+float UnaryMinus::Eval(const VarVals_t* VV /*= NULL*/) const { return eUnaryMinus(left->Eval(VV)); }
 
 interval UnaryMinus::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {

@@ -5,12 +5,37 @@
 #include "ExprImplementations.h"
 #include "ExprTools.h"
 #include "IntervalImplementations.h"
-#include "Math/Halton.h"
-#include "Math/Random.h"
 #include "MathIndividual.h"
 #include "NonaryExprSubclasses.h"
 
+#include <Math/BinaryRep.h>
+#include <Math/Halton.h>
+#include <Math/Random.h>
 #include <Util/Timer.h>
+
+float randVal()
+{
+    switch (randn(18)) {
+    case 0: return std::numeric_limits<float>::infinity();
+    case 1: return 0.0f;
+    case 2: return 1.0f;
+    case 3: return 2.0f;
+    case 4: return E_PI;
+    case 5: return E_E;
+    case 6: return frand();
+    case 7: return frand(1.0f, 1000.0f);
+    case 8: return frand(1000.0f, 1e9f);
+    case 9: return -std::numeric_limits<float>::infinity();
+    case 10: return -0.0f;
+    case 11: return -1.0f;
+    case 12: return -2.0f;
+    case 13: return -E_PI;
+    case 14: return -E_E;
+    case 15: return -frand();
+    case 16: return -frand(1.0f, 1000.0f);
+    default: return -frand(1000.0f, 1e9f);
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Test CUDA Kernel
@@ -78,8 +103,8 @@ void TestMod()
     int i = 0;
     std::cerr << "Testing mod accuracy.\n";
     while (1) {
-        float x = DRandf(-100.0f, 100.0f);
-        float y = DRandf(-100.0f, 100.0f);
+        float x = frand(-100.0f, 100.0f);
+        float y = frand(-100.0f, 100.0f);
         float res = fmod(x, y);
         float rese = eMod(x, y);
         if (fabsf((res - rese) / res) > 0.00001f && (fabs(res - rese) > 0.00001f)) {
@@ -132,7 +157,7 @@ void TestColorSpace()
 {
     f3Pixel Mn(0.5), Mx(0.5);
     while (1) {
-        f3Pixel RndYCrCb(DRandf(), DRandf(), DRandf());
+        f3Pixel RndYCrCb(frand(), frand(), frand());
         f3Pixel RndRGB(exYCrCbtoRGB(RndYCrCb));
         std::cerr << RndYCrCb << " -> " << RndRGB << std::endl;
         Mn = Min(RndRGB, Mn);
@@ -163,8 +188,8 @@ void TestFastATan2()
     std::cerr << "Testing transcendental accuracy.\n";
     int total = 0, escapes = 0;
     while (1) {
-        float x = DRandf(-100.0f, 100.0f);
-        float y = DRandf(-100.0f, 100.0f);
+        float x = frand(-100.0f, 100.0f);
+        float y = frand(-100.0f, 100.0f);
         float at2 = atan2f(y, x);
         float eat2 = eATan2(y, x);
         if (fabsf((at2 - eat2) / at2) > 0.57f) {
@@ -190,7 +215,7 @@ void TestFastSine()
     std::cerr << "Testing transcendental accuracy.\n";
     int total = 0;
     while (1) {
-        float x = DRandf(-100.0f, 100.0f);
+        float x = frand(-100.0f, 100.0f);
         float tanx = atanf(x);
         float etanx = eATan(x);
 
@@ -230,7 +255,7 @@ void TestMathIndividualCanBeCreatedAndDeleted()
 void TestFindLeadingOnes()
 {
     while (1) {
-        unsigned int v = 0x7fff; // & LRand();
+        unsigned int v = 0x7fff; // & irand();
         printf("0x%x 0x%x\n", v, FindLeadingOnes(v));
     }
 }
@@ -238,7 +263,7 @@ void TestFindLeadingOnes()
 void TestToIntToFloat()
 {
     while (1) {
-        float f = DRandf();
+        float f = frand();
         unsigned int i = ToInt(f);
         float ff = ToFloat(i);
         unsigned int ii = ToInt(ff);
@@ -288,38 +313,6 @@ void TestIntervalImpl()
     std::cerr << "iXOr       " << tostring(iXOr(lv, rv)) << '\n';
 }
 
-float randVal()
-{
-    union
-    {
-        float f;
-        unsigned int i;
-    } u;
-
-    u.i = {(unsigned int)LRand()};
-
-    if (IsNaN(u.f)) return randVal();
-
-    switch (randn(16)) {
-    case 0: return std::numeric_limits<float>::infinity();
-    case 1: return 0.0f;
-    case 2: return 1.0f;
-    case 3: return 2.0f;
-    case 4: return E_PI;
-    case 5: return DRandf();
-    case 6: return DRandf(1.0f, 1000.0f);
-    case 7: return DRandf(1000.0f, 1e9f);
-    case 8: return -std::numeric_limits<float>::infinity();
-    case 9: return -0.0f;
-    case 10: return -1.0f;
-    case 11: return -2.0f;
-    case 12: return -E_PI;
-    case 13: return -DRandf();
-    case 14: return -DRandf(1.0f, 1000.0f);
-    default: return -DRandf(1000.0f, 1e9f);
-    }
-}
-
 float relerror(float c1, float c0)
 {
     float abserr = fabsf(c1 - c0);
@@ -329,35 +322,33 @@ float relerror(float c1, float c0)
     return d;
 }
 
+// Adequate for real bases on 0..1000 and exponents on -10..10
+// Error is up to 30%. Artifacts are that curves in IFS images are jaggy.
+// http://martin.ankerl.com/2012/01/25/optimized-approximative-pow-in-c-and-cpp/
+// Actually slower than real powf on CUDA. Why?
+// Empirical estimate V = 1064861783; for double precision it's 1072632447.
+float fastPowOpt(float a, float b, int v = 1064861783)
+{
+    int t = floatAsUint(a) - v;
+    float bt = b * t;
+    int bti = (int)bt;
+
+    return uintAsFloat(bti + v);
+}
+
 void TestFastPowF()
 {
     while (1) {
-        float a = DRand(0, 100); // randVal();
-        float b = DRand(-10, 10);
+        float a = drand(0, 100); // randVal();
+        float b = drand(-10, 10);
 
         float c0 = pow(a, b);
-        float c1 = mypowf(a, b);
+        float c1 = fastPowOpt(a, b);
         float c2 = ePow(a, b);
         float d = relerror(c1, c0);
 
         printf("%15.5e %15.5e %15.5e \t%f,%f \t%f\n", c0, c1, c2, a, b, d);
     }
-}
-
-float fastPowOpt(float a, float b, int v)
-{
-    union
-    {
-        float f;
-        int x;
-    } u = {a};
-
-    int t = u.x - v;
-    float bt = b * t;
-    int bti = (int)bt;
-    u.x = bti + v;
-
-    return u.f;
 }
 
 void TestFastPowOpt()
@@ -366,7 +357,7 @@ void TestFastPowOpt()
     double vcount = 0;
 
     while (1) {
-        float a = -DRandf();
+        float a = -frand();
         float b = 2.0f;
         float c0 = powf(a, b);
 
@@ -403,11 +394,10 @@ void TestFastPowOpt()
 void Test()
 {
     std::cerr << "Test\n";
-    // TestFastPowOpt();
-    // TestFastPow();
-    // TestFastPowF();
-    TestFastATan2();
     exit(0);
+    TestFastPowOpt();
+    TestFastPowF();
+    TestFastATan2();
     TestIntervalImpl();
     TestFindLeadingOnes();
     TestToIntToFloat();

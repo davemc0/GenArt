@@ -3,14 +3,13 @@
 #include "Individual.h"
 #include "Style.h"
 
-#include <Math/Random.h>
-#include <fstream>
-#include <format>
+// DMcTools
+#include "Math/Random.h"
 
-Population::Population()
-{
-    m_FNameBase = std::string("Ex") + std::format("{:04}", LRand(0, 10000));
-}
+#include <format>
+#include <fstream>
+
+Population::Population() { m_FNameBase = std::string("Ex") + std::format("{:04}", irand(0, 10000)); }
 
 void Population::MoveParentToZoo(size_t i)
 {
@@ -61,7 +60,7 @@ void Population::DeleteSpanOfIndividuals(size_t index, size_t count, bool AmPare
     }
 }
 
-void Population::SavePopulation(const std::string & outFNameBase, Style* style)
+void Population::SavePopulation(const std::string& outFNameBase, Style* style)
 {
     try {
         std::string outFName = outFNameBase + style->getPopFileSuffix();
@@ -93,10 +92,7 @@ void Population::SavePopulation(const std::string & outFNameBase, Style* style)
 
 namespace {
 
-bool IndivCompare_IDNum(const Individual::shp Aa, const Individual::shp Bb)
-{
-    return Aa->IDNum < Bb->IDNum;
-}
+bool IndivCompare_IDNum(const Individual::shp Aa, const Individual::shp Bb) { return Aa->IDNum < Bb->IDNum; }
 
 bool IndivCompare_Score(const Individual::shp Aa, const Individual::shp Bb)
 {
@@ -109,10 +105,7 @@ bool IndivCompare_Score(const Individual::shp Aa, const Individual::shp Bb)
     }
 }
 
-bool IndivCompare_ColorSpace(const Individual::shp Aa, const Individual::shp Bb)
-{
-    return Aa->less(*Bb);
-}
+bool IndivCompare_ColorSpace(const Individual::shp Aa, const Individual::shp Bb) { return Aa->less(*Bb); }
 
 bool IndivCompare_RenderTime(const Individual::shp Aa, const Individual::shp Bb)
 {

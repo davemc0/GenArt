@@ -123,7 +123,7 @@ Expr* BinaryExpr::OptHelp(const opInfo& opI)
     // If interval is flat over the range, return a constant with the same value as this expression.
     if (ivl.span() <= opI.maxAbsErr && FOG(AI)) {
         // std::cerr << "\nBConst: " << count << tostring(ivl) << ' ' << Print(PREFIX) << '\n';
-        ivl = interval(ivl.lower); // ivl is a return value, so make it accurate.
+        ivl = interval(ivl.lower); // Ivl is a return value, so make it accurate.
         return new Const(ivl.lower);
     }
 
@@ -238,10 +238,7 @@ std::string And::Print(int pstyle) const
     }
 }
 
-float And::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eAnd(left->Eval(VV), right->Eval(VV));
-}
+float And::Eval(const VarVals_t* VV /*= NULL*/) const { return eAnd(left->Eval(VV), right->Eval(VV)); }
 
 interval And::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -296,10 +293,12 @@ Expr* And::Opt(const opInfo& opI)
     if (typeid(*left) == typeid(BitNot) && typeid(*right) == typeid(BitNot) && FOG(AA)) return new BitNot(new Or(left->GrabL(), right->GrabL()));
 
     // (A|B)&(A|C) => A|(B&C)
-    if (typeid(*left) == typeid(Or) && typeid(*right) == typeid(Or) && left->left->isequal(right->left) && FOG(AA)) return new Or(left->GrabL(), new And(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(Or) && typeid(*right) == typeid(Or) && left->left->isequal(right->left) && FOG(AA))
+        return new Or(left->GrabL(), new And(left->GrabR(), right->GrabR()));
 
     // A&(~A|B) => A&B
-    if (typeid(*right) == typeid(Or) && typeid(*(right->left)) == typeid(BitNot) && right->left->left->isequal(left) && FOG(AA)) return new And(GrabL(), right->GrabR());
+    if (typeid(*right) == typeid(Or) && typeid(*(right->left)) == typeid(BitNot) && right->left->left->isequal(left) && FOG(AA))
+        return new And(GrabL(), right->GrabR());
 
     // (A&B)&C => B&(A&C)
     if (typeid(*left) == typeid(And) && FOG(NE)) return new And(left->GrabR(), new And(GrabR(), left->GrabL()));
@@ -313,10 +312,7 @@ Expr* And::Opt(const opInfo& opI)
     return E;
 }
 
-float ATan2::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eATan2(left->Eval(VV), right->Eval(VV));
-}
+float ATan2::Eval(const VarVals_t* VV /*= NULL*/) const { return eATan2(left->Eval(VV), right->Eval(VV)); }
 
 interval ATan2::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -361,10 +357,7 @@ std::string Div::Print(int pstyle) const
     }
 }
 
-float Div::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eDiv(left->Eval(VV), right->Eval(VV));
-}
+float Div::Eval(const VarVals_t* VV /*= NULL*/) const { return eDiv(left->Eval(VV), right->Eval(VV)); }
 
 interval Div::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -416,7 +409,8 @@ Expr* Div::Opt(const opInfo& opI)
     if (left->isequal(right) && FOG(AA)) return new Const(1.0f);
 
     // (A^C)/(B^C) => (A/B)^C
-    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->right->isequal(right->right) && FOG(AA)) return new Pow(new Div(left->GrabL(), right->GrabL()), left->GrabR());
+    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->right->isequal(right->right) && FOG(AA))
+        return new Pow(new Div(left->GrabL(), right->GrabL()), left->GrabR());
 
     // (-A)/B => -(A/B)
     if (typeid(*left) == typeid(UnaryMinus) && FOG(NL)) return new UnaryMinus(new Div(left->GrabL(), GrabR()));
@@ -544,10 +538,7 @@ std::string Minus::Print(int pstyle) const
     }
 }
 
-float Minus::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eMinus(left->Eval(VV), right->Eval(VV));
-}
+float Minus::Eval(const VarVals_t* VV /*= NULL*/) const { return eMinus(left->Eval(VV), right->Eval(VV)); }
 
 interval Minus::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -586,7 +577,8 @@ Expr* Minus::Opt(const opInfo& opI)
     if (typeid(*right) == typeid(UnaryMinus) && FOG(AB)) return new Plus(GrabL(), right->GrabL());
 
     // A*B-A*C => A*(B-C)
-    if (typeid(*left) == typeid(Mult) && typeid(*right) == typeid(Mult) && left->left->isequal(right->left) && FOG(AA)) return new Mult(left->GrabL(), new Minus(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(Mult) && typeid(*right) == typeid(Mult) && left->left->isequal(right->left) && FOG(AA))
+        return new Mult(left->GrabL(), new Minus(left->GrabR(), right->GrabR()));
 
     // (ln A) - (ln B) => ln(A/B)
     if (typeid(*left) == typeid(Ln) && typeid(*right) == typeid(Ln) && FOG(AA)) { return new Ln(new Div(left->GrabL(), right->GrabL())); }
@@ -636,10 +628,7 @@ std::string Mod::Print(int pstyle) const
     }
 }
 
-float Mod::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eMod(left->Eval(VV), right->Eval(VV));
-}
+float Mod::Eval(const VarVals_t* VV /*= NULL*/) const { return eMod(left->Eval(VV), right->Eval(VV)); }
 
 interval Mod::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -698,10 +687,7 @@ std::string Mult::Print(int pstyle) const
     }
 }
 
-float Mult::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eMult(left->Eval(VV), right->Eval(VV));
-}
+float Mult::Eval(const VarVals_t* VV /*= NULL*/) const { return eMult(left->Eval(VV), right->Eval(VV)); }
 
 interval Mult::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -742,13 +728,16 @@ Expr* Mult::Opt(const opInfo& opI)
     if (typeid(*right) == typeid(Div) && left->isequal(right->right) && FOG(AA)) return right->GrabL();
 
     // (A^B)*(A^C) = A^(B+C)
-    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->left->isequal(right->left) && FOG(AA)) return new Pow(left->GrabL(), new Plus(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->left->isequal(right->left) && FOG(AA))
+        return new Pow(left->GrabL(), new Plus(left->GrabR(), right->GrabR()));
 
     // (A^B)*A = A^(B+1)
-    if (typeid(*left) == typeid(Pow) && left->left->isequal(right) && FOG(AA)) return new Pow(left->GrabL(), new Plus(left->GrabR(), new Const(1))); // Does Sqr(A)*A => Cube(A)
+    if (typeid(*left) == typeid(Pow) && left->left->isequal(right) && FOG(AA))
+        return new Pow(left->GrabL(), new Plus(left->GrabR(), new Const(1))); // Does Sqr(A)*A => Cube(A)
 
     // (A^C)*(B^C) => (A*B)^C
-    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->right->isequal(right->right) && FOG(AA)) return new Pow(new Mult(left->GrabL(), right->GrabL()), left->GrabR());
+    if (typeid(*left) == typeid(Pow) && typeid(*right) == typeid(Pow) && left->right->isequal(right->right) && FOG(AA))
+        return new Pow(new Mult(left->GrabL(), right->GrabL()), left->GrabR());
 
     // A*A => Sqr(A)
     if (left->isequal(right) && FOG(AA)) return new Sqr(GrabL());
@@ -786,7 +775,8 @@ Expr* Mult::Opt(const opInfo& opI)
     if (typeid(*right) == typeid(Mult) && FOG(NE)) return new Mult(new Mult(right->GrabL(), GrabL()), right->GrabR());
 
     // (A/C)*(B/D) => (A*B)/(C*D)
-    if (typeid(*left) == typeid(Div) && typeid(*right) == typeid(Div) && FOG(AL)) return new Div(new Mult(left->GrabL(), right->GrabL()), new Mult(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(Div) && typeid(*right) == typeid(Div) && FOG(AL))
+        return new Div(new Mult(left->GrabL(), right->GrabL()), new Mult(left->GrabR(), right->GrabR()));
 
     // (A/B)*C => (C*A)/B
     if (typeid(*left) == typeid(Div) && FOG(NL)) return new Div(new Mult(GrabR(), left->GrabL()), left->GrabR());
@@ -799,7 +789,8 @@ Expr* Mult::Opt(const opInfo& opI)
     if (typeid(*right) == typeid(UnaryMinus) && FOG(NL)) return new UnaryMinus(new Mult(right->GrabL(), GrabL()));
 
     // A*(B^-C) => A/(B^C)
-    if (typeid(*right) == typeid(Pow) && typeid(*right->right) == typeid(UnaryMinus) && FOG(AL)) return new Div(GrabL(), new Pow(right->GrabL(), right->right->GrabL()));
+    if (typeid(*right) == typeid(Pow) && typeid(*right->right) == typeid(UnaryMinus) && FOG(AL))
+        return new Div(GrabL(), new Pow(right->GrabL(), right->right->GrabL()));
 
     // B*Ln(A) => Ln(A^B)
     // Messes some up; not sure why yet.
@@ -823,10 +814,7 @@ std::string Or::Print(int pstyle) const
     }
 }
 
-float Or::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eOr(left->Eval(VV), right->Eval(VV));
-}
+float Or::Eval(const VarVals_t* VV /*= NULL*/) const { return eOr(left->Eval(VV), right->Eval(VV)); }
 
 interval Or::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -878,15 +866,18 @@ Expr* Or::Opt(const opInfo& opI)
     // B|(A|B) = A|B
     if (typeid(*right) == typeid(Or) && (right->left->isequal(left) || right->right->isequal(left)) && FOG(AA)) return GrabR();
     // (A|B)|(B|A) = A|B
-    if (typeid(*left) == typeid(Or) && typeid(*right) == typeid(Or) && (right->left->isequal(left->right) || right->right->isequal(left->left)) && FOG(AA)) return GrabL();
+    if (typeid(*left) == typeid(Or) && typeid(*right) == typeid(Or) && (right->left->isequal(left->right) || right->right->isequal(left->left)) && FOG(AA))
+        return GrabL();
     // (~A)|(~B) = ~(A&B)
     if (typeid(*left) == typeid(BitNot) && typeid(*right) == typeid(BitNot) && FOG(AB)) return new BitNot(new And(left->GrabL(), right->GrabL()));
 
     // (A&B)|(A&C) => A&(B|C)
-    if (typeid(*left) == typeid(And) && typeid(*right) == typeid(And) && left->left->isequal(right->left) && FOG(AB)) return new And(left->GrabL(), new Or(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(And) && typeid(*right) == typeid(And) && left->left->isequal(right->left) && FOG(AB))
+        return new And(left->GrabL(), new Or(left->GrabR(), right->GrabR()));
 
     // A|(~A&B) => A|B
-    if (typeid(*right) == typeid(And) && typeid(*(right->left)) == typeid(BitNot) && right->left->left->isequal(left) && FOG(AB)) return new Or(GrabL(), right->GrabR());
+    if (typeid(*right) == typeid(And) && typeid(*(right->left)) == typeid(BitNot) && right->left->left->isequal(left) && FOG(AB))
+        return new Or(GrabL(), right->GrabR());
 
     // Clamp(A)|B = A|B because | clamps both its inputs.
     if (typeid(*left) == typeid(Clamp) && FOG(AB)) return new Or(left->GrabL(), GrabR());
@@ -915,10 +906,7 @@ std::string Plus::Print(int pstyle) const
     }
 }
 
-float Plus::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return ePlus(left->Eval(VV), right->Eval(VV));
-}
+float Plus::Eval(const VarVals_t* VV /*= NULL*/) const { return ePlus(left->Eval(VV), right->Eval(VV)); }
 
 interval Plus::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -978,7 +966,8 @@ Expr* Plus::Opt(const opInfo& opI)
     if (typeid(*right) == typeid(Minus) && left->isequal(right->right) && FOG(AA)) return right->GrabL();
 
     // A*B+A*C => A*(B+C)
-    if (typeid(*left) == typeid(Mult) && typeid(*right) == typeid(Mult) && left->left->isequal(right->left) && FOG(AA)) return new Mult(left->GrabL(), new Plus(left->GrabR(), right->GrabR()));
+    if (typeid(*left) == typeid(Mult) && typeid(*right) == typeid(Mult) && left->left->isequal(right->left) && FOG(AA))
+        return new Mult(left->GrabL(), new Plus(left->GrabR(), right->GrabR()));
 
     // (-A)+B => B-A
     if (typeid(*left) == typeid(UnaryMinus) && FOG(AL)) return new Minus(GrabR(), left->GrabL());
@@ -1002,10 +991,7 @@ Expr* Plus::Opt(const opInfo& opI)
     return E;
 }
 
-float Pow::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return ePow(left->Eval(VV), right->Eval(VV));
-}
+float Pow::Eval(const VarVals_t* VV /*= NULL*/) const { return ePow(left->Eval(VV), right->Eval(VV)); }
 
 interval Pow::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {
@@ -1077,10 +1063,7 @@ std::string XOr::Print(int pstyle) const
     }
 }
 
-float XOr::Eval(const VarVals_t* VV /*= NULL*/) const
-{
-    return eXOr(left->Eval(VV), right->Eval(VV));
-}
+float XOr::Eval(const VarVals_t* VV /*= NULL*/) const { return eXOr(left->Eval(VV), right->Eval(VV)); }
 
 interval XOr::Ival(const opInfo& opI, const interval& lv /* = interval() */, const interval& rv /*= interval() */) const
 {

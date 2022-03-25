@@ -8,8 +8,7 @@
 #include <memory>
 #include <string>
 
-class MathIndividual : public Individual
-{
+class MathIndividual : public Individual {
 public:
     typedef std::shared_ptr<MathIndividual> shp;
 
@@ -23,10 +22,10 @@ public:
 
     // Fills this MathIndividual with the given expressions, which it copies and optimizes.
     // Takes ownership of original expressions and deletes them. Does NOT own CMap_.
-    MathIndividual(Expr* Ri, Expr* Gi, Expr* Bi, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_, int ParentA_, int ParentB_, float XMin_, float YMin_,
-                   float BoxWid_);
-    MathIndividual(const std::string& Rs, const std::string& Gs, const std::string& Bs, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_, int ParentA_,
+    MathIndividual(Expr* Ri, Expr* Gi, Expr* Bi, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_, int ParentA_,
                    int ParentB_, float XMin_, float YMin_, float BoxWid_);
+    MathIndividual(const std::string& Rs, const std::string& Gs, const std::string& Bs, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_,
+                   int IDNum_, int Generation_, int ParentA_, int ParentB_, float XMin_, float YMin_, float BoxWid_);
 
     MathIndividual(const MathIndividual& In);
 

@@ -110,18 +110,19 @@ void getCUDADeviceInfo()
                "int memoryBusWidth=%d\n"
                "int l2CacheSize=%d\n"
                "int maxThreadsPerMultiProcessor=%d\n",
-               prop.name, prop.totalGlobalMem, suffix, prop.sharedMemPerBlock, prop.regsPerBlock, prop.warpSize, prop.memPitch, prop.maxThreadsPerBlock, prop.maxThreadsDim[0], prop.maxThreadsDim[1],
-               prop.maxThreadsDim[2], prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2], prop.clockRate, prop.totalConstMem, prop.major, prop.minor, prop.textureAlignment,
-               prop.deviceOverlap, prop.multiProcessorCount, prop.kernelExecTimeoutEnabled, prop.integrated, prop.canMapHostMemory, prop.computeMode, prop.maxTexture1D, prop.maxTexture2D[0],
-               prop.maxTexture2D[1], prop.maxTexture3D[0], prop.maxTexture3D[1], prop.maxTexture3D[2], prop.maxTexture1DLayered[0], prop.maxTexture1DLayered[1], prop.maxTexture2DLayered[0],
-               prop.maxTexture2DLayered[1], prop.maxTexture2DLayered[2], prop.surfaceAlignment, prop.concurrentKernels, prop.ECCEnabled, prop.pciBusID, prop.pciDeviceID, prop.tccDriver,
-               prop.asyncEngineCount, prop.unifiedAddressing, prop.memoryClockRate, prop.memoryBusWidth, prop.l2CacheSize, prop.maxThreadsPerMultiProcessor);
+               prop.name, prop.totalGlobalMem, suffix, prop.sharedMemPerBlock, prop.regsPerBlock, prop.warpSize, prop.memPitch, prop.maxThreadsPerBlock,
+               prop.maxThreadsDim[0], prop.maxThreadsDim[1], prop.maxThreadsDim[2], prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
+               prop.clockRate, prop.totalConstMem, prop.major, prop.minor, prop.textureAlignment, prop.deviceOverlap, prop.multiProcessorCount,
+               prop.kernelExecTimeoutEnabled, prop.integrated, prop.canMapHostMemory, prop.computeMode, prop.maxTexture1D, prop.maxTexture2D[0],
+               prop.maxTexture2D[1], prop.maxTexture3D[0], prop.maxTexture3D[1], prop.maxTexture3D[2], prop.maxTexture1DLayered[0], prop.maxTexture1DLayered[1],
+               prop.maxTexture2DLayered[0], prop.maxTexture2DLayered[1], prop.maxTexture2DLayered[2], prop.surfaceAlignment, prop.concurrentKernels,
+               prop.ECCEnabled, prop.pciBusID, prop.pciDeviceID, prop.tccDriver, prop.asyncEngineCount, prop.unifiedAddressing, prop.memoryClockRate,
+               prop.memoryBusWidth, prop.l2CacheSize, prop.maxThreadsPerMultiProcessor);
     }
 }
 
 void finishCUDA()
 {
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
+    // Must call cudaDeviceReset before exiting in order for profiling and tracing tools such as Nsight and Visual Profiler to show complete traces.
     cudaDeviceReset();
 }

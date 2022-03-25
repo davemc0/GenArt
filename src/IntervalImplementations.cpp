@@ -18,15 +18,9 @@ interval iAbs(const interval lv)
         return lv;
 }
 
-interval iACos(const interval lv)
-{
-    return interval(eACos(lv.upper), eACos(lv.lower));
-}
+interval iACos(const interval lv) { return interval(eACos(lv.upper), eACos(lv.lower)); }
 
-interval iASin(const interval lv)
-{
-    return interval(eASin(lv.lower), eASin(lv.upper));
-}
+interval iASin(const interval lv) { return interval(eASin(lv.lower), eASin(lv.upper)); }
 
 interval iATan(const interval lv)
 {
@@ -36,20 +30,11 @@ interval iATan(const interval lv)
     return interval(eATan(lv.lower_finite()), eATan(lv.upper_finite()));
 }
 
-interval iBitNot(const interval lv)
-{
-    return interval(eBitNot(lv.lower), eBitNot(lv.upper));
-}
+interval iBitNot(const interval lv) { return interval(eBitNot(lv.lower), eBitNot(lv.upper)); }
 
-interval iCbrt(const interval lv)
-{
-    return interval(eCbrt(lv.lower), eCbrt(lv.upper));
-}
+interval iCbrt(const interval lv) { return interval(eCbrt(lv.lower), eCbrt(lv.upper)); }
 
-interval iClamp(const interval lv)
-{
-    return interval(eClamp(lv.lower), eClamp(lv.upper));
-}
+interval iClamp(const interval lv) { return interval(eClamp(lv.lower), eClamp(lv.upper)); }
 
 interval iCos(const interval lv)
 {
@@ -66,15 +51,9 @@ interval iCos(const interval lv)
     return iout;
 }
 
-interval iCube(const interval lv)
-{
-    return interval(eCube(lv.lower), eCube(lv.upper));
-}
+interval iCube(const interval lv) { return interval(eCube(lv.lower), eCube(lv.upper)); }
 
-interval iExp(const interval lv)
-{
-    return interval(eExp(lv.lower), eExp(lv.upper));
-}
+interval iExp(const interval lv) { return interval(eExp(lv.lower), eExp(lv.upper)); }
 
 interval iLn(const interval lv)
 {
@@ -99,10 +78,7 @@ interval iLn(const interval lv)
     return iout;
 }
 
-interval iRound(const interval lv)
-{
-    return interval(eRound(lv.lower), eRound(lv.upper));
-}
+interval iRound(const interval lv) { return interval(eRound(lv.lower), eRound(lv.upper)); }
 
 interval iSin(const interval lv)
 {
@@ -156,10 +132,7 @@ interval iTan(const interval lv)
     return iout;
 }
 
-interval iUnaryMinus(const interval lv)
-{
-    return interval(eUnaryMinus(lv.lower), eUnaryMinus(lv.upper));
-}
+interval iUnaryMinus(const interval lv) { return interval(eUnaryMinus(lv.lower), eUnaryMinus(lv.upper)); }
 
 ///////////////////////////////////////////////////
 // BinaryExpr
@@ -293,7 +266,7 @@ interval iMod(const interval lv, const interval rv)
     ASSERT_D(!(lv.lower < 0 && lv.upper > 0));
     ASSERT_D(!(rv.lower < 0 && rv.upper > 0));
 
-    // fmod(x,y) has same sign as x and magnitude less than y.
+    // Fmod(x,y) has same sign as x and magnitude less than y.
     if (lv.lower < 0 || lv.upper < 0) return -iMod(-lv, rv);
     if (rv.lower < 0 || rv.upper < 0) return iMod(lv, -rv);
 
@@ -311,7 +284,7 @@ interval iMod(const interval lv, const interval rv)
     if (lvo.upper < rvo.lower || rvo.lower == interval::infinity()) return lvo; // No overlap so no modding.
     if (lvo.upper == interval::infinity())                                      // put this last to not mess up [1,inf] % [inf,inf].
         return interval(0, rvo.upper);
-    if (lvo.lower == lvo.upper && rvo.lower == rvo.upper) return interval(eMod(lvo.lower, rvo.lower)); // fails on inf, so do it after
+    if (lvo.lower == lvo.upper && rvo.lower == rvo.upper) return interval(eMod(lvo.lower, rvo.lower)); // Fails on inf, so do it after
 
     interval iout;
     iout.extend(interval(eMod(lvo.lower, rvo.lower), eMod(lvo.upper, rvo.upper)));
@@ -327,10 +300,7 @@ interval iMod(const interval lv, const interval rv)
 }
 
 namespace {
-float make_finite(float a)
-{
-    return (a == interval::infinity()) ? 1.0f : (a == -interval::infinity()) ? -1.0f : a;
-}
+float make_finite(float a) { return (a == interval::infinity()) ? 1.0f : (a == -interval::infinity()) ? -1.0f : a; }
 
 float fmul(float a, float b)
 {
@@ -439,7 +409,8 @@ interval iPow(const interval lv, const interval rv)
         if (rv.lower < 0.0f && lv.upper > 0)   // Small positive base to a negative power. Inverting a fraction makes it large.
             iout.extend(interval::infinity()); // Needs 0 threshold to get +inf in output.
 
-        if (rv.lower <= -1.0f && lv.lower < 0) // Small negative base to a negative power. Inverting a fraction makes it large. Exponent rounds toward zero, so start at -1.
+        if (rv.lower <= -1.0f &&
+            lv.lower < 0) // Small negative base to a negative power. Inverting a fraction makes it large. Exponent rounds toward zero, so start at -1.
             if (rv.span() >= 2 || (int(rv.lower) & 1) || int(rv.upper) & 1 ||
                 (rv.contains(int(rv.lower + 1)) && (int(rv.lower + 1) & 1))) // Make sure there's an ODD power, or the result will be positive infinity.
                 iout.extend(-interval::infinity());                          // Need -1 threshold to avoid -inf in output

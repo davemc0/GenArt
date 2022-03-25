@@ -6,6 +6,8 @@
 // Total size of token array, shared across all three channels
 #define MAX_TOKENS 4096
 
+const int MAX_COLORMAP_ENTRIES = 64;
+
 // The dimensions of the thread block for CUDA
 // Make the individual warps more square.
 // A warp is 8x4, so a block is 1x8 warps.
@@ -19,6 +21,14 @@ enum ColorMapOrderings_t { REORDER_SHORT = 0, REORDER_LONG = 1, REORDER_RANDOM =
 static const char* ColorMapOrderings[NUM_REORDERS] = {"low contrast", "high contrast", "random", "luminance"};
 
 // The various color spaces
-enum ColorSpace_t { SPACE_RGB = 0, SPACE_TONEMAP_RGB = 1, SPACE_YCRCB = 2, SPACE_TONEMAP_HSV = 3, SPACE_COLMAP = 4, SPACE_TONEMAP_COLMAP = 5, NUM_COLORSPACES = 6 };
+enum ColorSpace_t {
+    SPACE_RGB = 0,
+    SPACE_TONEMAP_RGB = 1,
+    SPACE_YCRCB = 2,
+    SPACE_TONEMAP_HSV = 3,
+    SPACE_COLMAP = 4,
+    SPACE_TONEMAP_COLMAP = 5,
+    NUM_COLORSPACES = 6
+};
 
 static const char* ColorSpaceNames[NUM_COLORSPACES] = {"RGB", "Toned RGB", "YCrCb", "Toned HSV", "ColorMap", "Toned ColorMap"};

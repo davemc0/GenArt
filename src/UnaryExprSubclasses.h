@@ -2,8 +2,7 @@
 
 #include "Expr.h"
 
-class UnaryExpr : public Expr
-{
+class UnaryExpr : public Expr {
 public:
     inline bool isSymmetric() const { return true; }
     inline int getPrecedence() const { return 2; }
@@ -28,8 +27,7 @@ private:
     bool isless(const Expr* E) const;
 };
 
-class Abs : public UnaryExpr
-{
+class Abs : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -48,8 +46,7 @@ public:
     inline Abs(Expr* E) { init(E); }
 };
 
-class ACos : public UnaryExpr
-{
+class ACos : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -68,8 +65,7 @@ public:
     inline ACos(Expr* E) { init(E); }
 };
 
-class ASin : public UnaryExpr
-{
+class ASin : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -88,8 +84,7 @@ public:
     inline ASin(Expr* E) { init(E); }
 };
 
-class ATan : public UnaryExpr
-{
+class ATan : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -108,8 +103,7 @@ public:
     inline ATan(Expr* E) { init(E); }
 };
 
-class BitNot : public UnaryExpr
-{
+class BitNot : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -131,8 +125,7 @@ public:
     inline BitNot(Expr* E) { init(E); }
 };
 
-class Cbrt : public UnaryExpr
-{
+class Cbrt : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -151,8 +144,7 @@ public:
     inline Cbrt(Expr* E) { init(E); }
 };
 
-class Clamp : public UnaryExpr
-{
+class Clamp : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -171,8 +163,7 @@ public:
     inline Clamp(Expr* E) { init(E); }
 };
 
-class Cos : public UnaryExpr
-{
+class Cos : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -191,8 +182,7 @@ public:
     inline Cos(Expr* E) { init(E); }
 };
 
-class Cube : public UnaryExpr
-{
+class Cube : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -211,8 +201,7 @@ public:
     inline Cube(Expr* E) { init(E); }
 };
 
-class Exp : public UnaryExpr
-{
+class Exp : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -231,8 +220,7 @@ public:
     inline Exp(Expr* E) { init(E); }
 };
 
-class Ln : public UnaryExpr
-{
+class Ln : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -251,8 +239,7 @@ public:
     inline Ln(Expr* E) { init(E); }
 };
 
-class Round : public UnaryExpr
-{
+class Round : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -271,8 +258,7 @@ public:
     inline Round(Expr* E) { init(E); }
 };
 
-class Sin : public UnaryExpr
-{
+class Sin : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -291,8 +277,7 @@ public:
     inline Sin(Expr* E) { init(E); }
 };
 
-class Sqr : public UnaryExpr
-{
+class Sqr : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -311,8 +296,7 @@ public:
     inline Sqr(Expr* E) { init(E); }
 };
 
-class Sqrt : public UnaryExpr
-{
+class Sqrt : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -331,8 +315,7 @@ public:
     inline Sqrt(Expr* E) { init(E); }
 };
 
-class Tan : public UnaryExpr
-{
+class Tan : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;
@@ -351,8 +334,7 @@ public:
     inline Tan(Expr* E) { init(E); }
 };
 
-class UnaryMinus : public UnaryExpr
-{
+class UnaryMinus : public UnaryExpr {
 public:
     static std::string name;
     static std::string fname;

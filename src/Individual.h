@@ -9,8 +9,7 @@
 class AutoScorer;
 
 // Represent an individual in the population
-class Individual
-{
+class Individual {
 public:
     typedef std::shared_ptr<Individual> shp;
 

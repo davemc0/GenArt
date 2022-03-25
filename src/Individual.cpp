@@ -35,10 +35,7 @@ Individual::Individual(float Score_, int IDNum_, int Generation_, int ParentA_, 
     init(Score_, IDNum_, Generation_, ParentA_, ParentB_, XMin_, YMin_, BoxWid_);
 }
 
-Individual::Individual(const Individual& In)
-{
-    ASSERT_R(0);
-}
+Individual::Individual(const Individual& In) { ASSERT_R(0); }
 
 Individual::~Individual()
 {
@@ -141,15 +138,9 @@ void Individual::CenterY()
     ImClear();
 }
 
-uc4Image* Individual::ThumbIm()
-{
-    return m_thumbIm;
-}
+uc4Image* Individual::ThumbIm() { return m_thumbIm; }
 
-uc4Image* Individual::FinalIm()
-{
-    return m_finalIm;
-}
+uc4Image* Individual::FinalIm() { return m_finalIm; }
 
 uc4DImage* Individual::ThumbImD()
 {
@@ -169,7 +160,8 @@ std::string Individual::stringSave()
 {
     std::ostringstream outStream;
 
-    outStream << GetScore() << " " << GetIDNum() << " " << GetGeneration() << " " << GetParentA() << " " << GetParentB() << " " << Xmin << " " << Ymin << " " << BoxWid;
+    outStream << GetScore() << " " << GetIDNum() << " " << GetGeneration() << " " << GetParentA() << " " << GetParentB() << " " << Xmin << " " << Ymin << " "
+              << BoxWid;
 
     return outStream.str();
 }
@@ -178,22 +170,13 @@ std::string Individual::stringDisplay(const float x /*= -1.0f*/, const float y /
 {
     std::ostringstream out;
     FloatFmt(out, 2);
-    out << "IDNum=" << IDNum << " Score=" << Score << " Corner=" << Xmin << "," << Ymin << " BoxWid=" << BoxWid << " Times=" << ThumbImD()->renderTime() << ", " << FinalImD()->renderTime()
-        << " Gen=" << Generation << " Parents=" << ParentA << "," << ParentB;
+    out << "IDNum=" << IDNum << " Score=" << Score << " Corner=" << Xmin << "," << Ymin << " BoxWid=" << BoxWid << " Times=" << ThumbImD()->renderTime() << ", "
+        << FinalImD()->renderTime() << " Gen=" << Generation << " Parents=" << ParentA << "," << ParentB;
     return out.str();
 }
 
-bool Individual::equal(const Individual& p) const
-{
-    return Xmin == p.Xmin && Ymin == p.Ymin && BoxWid == p.BoxWid;
-}
+bool Individual::equal(const Individual& p) const { return Xmin == p.Xmin && Ymin == p.Ymin && BoxWid == p.BoxWid; }
 
-bool Individual::less(const Individual& p) const
-{
-    ASSERT_R(0);
-}
+bool Individual::less(const Individual& p) const { ASSERT_R(0); }
 
-void Individual::assignIDNum()
-{
-    IDNum = CreateIndivID();
-}
+void Individual::assignIDNum() { IDNum = CreateIndivID(); }

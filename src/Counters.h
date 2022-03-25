@@ -3,8 +3,7 @@
 #include <map>
 #include <string>
 
-class Counters
-{
+class Counters {
 public:
     Counters();
     ~Counters();

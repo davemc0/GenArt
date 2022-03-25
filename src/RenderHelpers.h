@@ -11,8 +11,7 @@
 namespace {
 
 #ifdef __CUDACC__
-struct f3Pixel : public float3
-{
+struct f3Pixel : public float3 {
 #define DMC_TMPLOC __device__
     DMC_TMPLOC f3Pixel() {}
     DMC_TMPLOC f3Pixel(float r_, float g_, float b_)
@@ -32,10 +31,7 @@ struct f3Pixel : public float3
 #endif
 
 // Clamp to 0..1
-DMC_LOC f3Pixel Saturatef3(const f3Pixel& val)
-{
-    return f3Pixel(Saturate(val.r()), Saturate(val.g()), Saturate(val.b()));
-}
+DMC_LOC f3Pixel Saturatef3(const f3Pixel& val) { return f3Pixel(Saturate(val.r()), Saturate(val.g()), Saturate(val.b())); }
 
 // These are YUV to RGB.
 // R = Y + (1.4075 * (V - 128));
@@ -102,21 +98,15 @@ DMC_LOC f3Pixel HSVtoRGB(const f3Pixel& HSV)
 }
 
 // Clamps negative numbers to zero, then maps positive numbers to 0..1.
-DMC_LOC float ToneMap1L(const float p)
-{
-    return p <= 0.0f ? 0.0f : p / (1.0f + p);
-}
+DMC_LOC float ToneMap1L(const float p) { return p <= 0.0f ? 0.0f : p / (1.0f + p); }
 
 // Clamps negative numbers to zero, then maps positive numbers to 0..1.
-DMC_LOC f3Pixel ToneMapL(const f3Pixel& P)
-{
-    return f3Pixel(ToneMap1L(P.r()), ToneMap1L(P.g()), ToneMap1L(P.b()));
-}
+DMC_LOC f3Pixel ToneMapL(const f3Pixel& P) { return f3Pixel(ToneMap1L(P.r()), ToneMap1L(P.g()), ToneMap1L(P.b())); }
 
 // Several ways to transform any red,grn,blu color values to output on 0..1.
 DMC_LOC f3Pixel ColorTransform(const float red, const float grn, const float blu,
 #ifdef __CUDACC__
-                               int ColorSpace)
+                               int ColorSpace, cudaTextureObject_t ColMapTexObj)
 #else
                                int ColorSpace, const ColorMap<f3Pixel>& CMap)
 #endif
@@ -145,7 +135,7 @@ DMC_LOC f3Pixel ColorTransform(const float red, const float grn, const float blu
     } break;
     case SPACE_COLMAP: { // Treat the G equation as an index into the ColorMap.
 #ifdef __CUDACC__
-        float4 val4 = tex1D(ColMapTexRef, Orig.g());
+        float4 val4 = tex1D<float4>(ColMapTexObj, Orig.g());
         FinalVal.r() = val4.x;
         FinalVal.g() = val4.y;
         FinalVal.b() = val4.z;
@@ -156,7 +146,7 @@ DMC_LOC f3Pixel ColorTransform(const float red, const float grn, const float blu
     case SPACE_TONEMAP_COLMAP: { // Treat ToneMap(G) as an index into the ColorMap.
         float TonedVal = ToneMap1L(Orig.g());
 #ifdef __CUDACC__
-        float4 val4 = tex1D(ColMapTexRef, TonedVal);
+        float4 val4 = tex1D<float4>(ColMapTexObj, TonedVal);
         FinalVal.r() = val4.x;
         FinalVal.g() = val4.y;
         FinalVal.b() = val4.z;
@@ -168,5 +158,4 @@ DMC_LOC f3Pixel ColorTransform(const float red, const float grn, const float blu
 
     return FinalVal;
 }
-
 }; // namespace

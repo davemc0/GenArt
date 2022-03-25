@@ -4,11 +4,11 @@
 #include "Individual.h"
 #include "UI.h"
 
+// OpenGL
 #include "GL/glew.h"
 
 // This needs to come after GLEW
 #include "GL/freeglut.h"
-
 #include "cuda_gl_interop.h"
 #include "cuda_runtime_api.h"
 //#include "device_types.h"
@@ -101,15 +101,9 @@ void uc4DImage::unmap()
     checkCUDAError("cudaGraphicsUnmapResources");
 }
 
-void uc4DImage::renderTimerStart()
-{
-    cudaEventRecord(m_start, 0);
-}
+void uc4DImage::renderTimerStart() { cudaEventRecord(m_start, 0); }
 
-void uc4DImage::renderTimerStop()
-{
-    cudaEventRecord(m_stop, 0);
-}
+void uc4DImage::renderTimerStop() { cudaEventRecord(m_stop, 0); }
 
 bool uc4DImage::renderTimerFinished() const
 {
@@ -117,10 +111,7 @@ bool uc4DImage::renderTimerFinished() const
     return (res == ::cudaSuccess) && !empty(); // cudaSuccess makes sure it's done; !empty() makes sure the event was recorded.
 }
 
-void uc4DImage::renderBlock()
-{
-    cudaEventSynchronize(m_stop);
-}
+void uc4DImage::renderBlock() { cudaEventSynchronize(m_stop); }
 
 float uc4DImage::renderTime()
 {
@@ -132,17 +123,8 @@ float uc4DImage::renderTime()
     return m_renderTime;
 }
 
-bool uc4DImage::imDone() const
-{
-    return renderTimerFinished();
-}
+bool uc4DImage::imDone() const { return renderTimerFinished(); }
 
-bool uc4DImage::needsLaunch() const
-{
-    return !m_launched;
-}
+bool uc4DImage::needsLaunch() const { return !m_launched; }
 
-void uc4DImage::setLaunched(bool val)
-{
-    m_launched = val;
-}
+void uc4DImage::setLaunched(bool val) { m_launched = val; }

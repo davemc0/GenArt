@@ -13,16 +13,16 @@
 extern MathStyle* MSEng;
 extern RenderManager* RMan;
 
-MathIndividual::MathIndividual(Expr* Ri, Expr* Gi, Expr* Bi, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_, int ParentA_, int ParentB_, float XMin_,
-                               float YMin_, float BoxWid_) :
+MathIndividual::MathIndividual(Expr* Ri, Expr* Gi, Expr* Bi, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_,
+                               int ParentA_, int ParentB_, float XMin_, float YMin_, float BoxWid_) :
     Individual(Score_, IDNum_, Generation_, ParentA_, ParentB_, XMin_, YMin_, BoxWid_),
     ColorSpace(ColorSpace_)
 {
     init(Ri, Gi, Bi, CMap_);
 }
 
-MathIndividual::MathIndividual(const std::string& Rs, const std::string& Gs, const std::string& Bs, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_, float Score_, int IDNum_, int Generation_,
-                               int ParentA_, int ParentB_, float XMin_, float YMin_, float BoxWid_) :
+MathIndividual::MathIndividual(const std::string& Rs, const std::string& Gs, const std::string& Bs, ColorMap<f3Pixel>* CMap_, ColorSpace_t ColorSpace_,
+                               float Score_, int IDNum_, int Generation_, int ParentA_, int ParentB_, float XMin_, float YMin_, float BoxWid_) :
     Individual(Score_, IDNum_, Generation_, ParentA_, ParentB_, XMin_, YMin_, BoxWid_),
     ColorSpace(ColorSpace_)
 {
@@ -74,11 +74,12 @@ void MathIndividual::init(Expr* Ri, Expr* Gi, Expr* Bi, ColorMap<f3Pixel>* CMap_
     MaxVV.vals[1] = Ymin + BoxWid * RMan->thHgt / RMan->thWid;
 
     interval rivl; // Find the min and max r values of the four corners of the viewport
-    rivl.extend(sqrtf(MinVV.vals[0] * MinVV.vals[0] + MinVV.vals[1] * MinVV.vals[1]));
-    rivl.extend(sqrtf(MinVV.vals[0] * MinVV.vals[0] + MaxVV.vals[1] * MaxVV.vals[1]));
-    rivl.extend(sqrtf(MaxVV.vals[0] * MaxVV.vals[0] + MinVV.vals[1] * MinVV.vals[1]));
-    rivl.extend(sqrtf(MaxVV.vals[0] * MaxVV.vals[0] + MaxVV.vals[1] * MaxVV.vals[1]));
+    rivl.extend(sqrtf(sqr(MinVV.vals[0]) + sqr(MinVV.vals[1])));
+    rivl.extend(sqrtf(sqr(MinVV.vals[0]) + sqr(MaxVV.vals[1])));
+    rivl.extend(sqrtf(sqr(MaxVV.vals[0]) + sqr(MinVV.vals[1])));
+    rivl.extend(sqrtf(sqr(MaxVV.vals[0]) + sqr(MaxVV.vals[1])));
     // The zero-crossings
+    // XXX: These points may not be inside the viewport!!!
     rivl.extend(sqrtf(MinVV.vals[0] * MinVV.vals[0]));
     rivl.extend(sqrtf(MinVV.vals[1] * MinVV.vals[1]));
     rivl.extend(sqrtf(MaxVV.vals[0] * MaxVV.vals[0]));
@@ -216,10 +217,7 @@ void MathIndividual::RandConst(const float rc)
     ImClear();
 }
 
-int MathIndividual::GetSpace() const
-{
-    return ColorSpace;
-}
+int MathIndividual::GetSpace() const { return ColorSpace; }
 
 void MathIndividual::SetSpace(ColorSpace_t ColorSpace_)
 {
@@ -271,7 +269,8 @@ void MathIndividual::getColorSpaceIntervals(ColorSpace_t space, interval cspaceI
         cspaceInterval[0] = cspaceInterval[1] = cspaceInterval[2] = interval(-1, 1); // Channels are interdependent; could specify tighter bounds.
         break;
     case SPACE_TONEMAP_HSV:
-        cspaceInterval[0] = cspaceInterval[1] = cspaceInterval[2] = interval(-interval::infinity(), interval::infinity()); // Channels are interdependent; could specify tighter bounds.
+        cspaceInterval[0] = cspaceInterval[1] = cspaceInterval[2] = interval(-interval::infinity(),
+                                                                             interval::infinity()); // Channels are interdependent; could specify tighter bounds.
         break;
     case SPACE_COLMAP:
         cspaceInterval[0] = cspaceInterval[2] = interval(0, 0);
@@ -382,8 +381,8 @@ bool MathIndividual::equal(const Individual& p_) const
     const MathIndividual& p = static_cast<const MathIndividual&>(p_);
 
     return static_cast<const Individual&>(*this).Individual::equal(p_) && ColorSpace == p.ColorSpace && G->isequal(p.G) &&
-           (((ColorSpace == SPACE_COLMAP || ColorSpace == SPACE_TONEMAP_COLMAP) && Equal(CMap, p.CMap)) ||
-            ((ColorSpace != SPACE_COLMAP && ColorSpace != SPACE_TONEMAP_COLMAP) && R->isequal(p.R) && B->isequal(p.B)));
+        (((ColorSpace == SPACE_COLMAP || ColorSpace == SPACE_TONEMAP_COLMAP) && Equal(CMap, p.CMap)) ||
+         ((ColorSpace != SPACE_COLMAP && ColorSpace != SPACE_TONEMAP_COLMAP) && R->isequal(p.R) && B->isequal(p.B)));
 }
 
 bool MathIndividual::less(const Individual& p_) const
@@ -418,11 +417,8 @@ MathIndividual::shp fromstream(std::ifstream& InF, bool onlyColorMaps, bool& fin
         return NULL;
     }
 
-    float Score = 0.0f;
-    int ColorSpace = -1;
-    int IDNum = -1, Generation = -1, ParentA = -1, ParentB = -1;
-    float XMin, YMin, BoxWid;
-
+    int IDNum = -1, Generation = -1, ParentA = -1, ParentB = -1, ColorSpace = -1;
+    float Score = 0.0f, XMin, YMin, BoxWid = -1.f;
     std::istringstream IS(inl);
 
 #if 1
@@ -439,12 +435,14 @@ MathIndividual::shp fromstream(std::ifstream& InF, bool onlyColorMaps, bool& fin
     Score = floorf(0.5f + float(Score) * 100.0f) * 0.01f;
 
     std::string Ch0, Ch1, Ch2;
-    getline(InF, Ch0);
-
     ColorMap<f3Pixel>* CMap = NULL;
+
+    ASSERT_RM(ColorSpace >= 0, "IDNum: " + std::to_string(IDNum));
+    ASSERT_RM(BoxWid > 0, "IDNum: " + std::to_string(IDNum));
 
     if (ColorSpace == SPACE_COLMAP || ColorSpace == SPACE_TONEMAP_COLMAP) {
         std::cerr << 'C';
+        getline(InF, Ch1);
         int CMapSize;
         InF >> CMapSize;
         getline(InF, inl);
@@ -453,12 +451,12 @@ MathIndividual::shp fromstream(std::ifstream& InF, bool onlyColorMaps, bool& fin
 
         getline(InF, inl);
 
-        if (onlyColorMaps) { Ch0 = std::string("/ + * 4 - * y 4 % * y 4 1 - * x 4 % * x 4 1 16"); }
-        Ch1 = Ch0;
+        if (onlyColorMaps) { Ch1 = std::string("/ + * 4 - * y 4 % * y 4 1 - * x 4 % * x 4 1 16"); }
         Ch0 = "0";
         Ch2 = "0";
     } else {
         std::cerr << '3';
+        getline(InF, Ch0);
         getline(InF, Ch1);
         getline(InF, Ch2);
 

@@ -52,15 +52,9 @@ const int MAX_VARIABLES = 3;
 
 namespace {
 
-DMC_LOC float eAbs(const float lv)
-{
-    return fabsf(lv);
-}
+DMC_LOC float eAbs(const float lv) { return fabsf(lv); }
 
-DMC_LOC float eACos(const float lv)
-{
-    return acosf(Clampf(-1.0f, lv, 1.0f));
-}
+DMC_LOC float eACos(const float lv) { return acosf(Clampf(-1.0f, lv, 1.0f)); }
 
 DMC_LOC float eAnd(const float lv, const float rv)
 {
@@ -70,10 +64,7 @@ DMC_LOC float eAnd(const float lv, const float rv)
     return ToFloat(ll & rr);
 }
 
-DMC_LOC float eASin(const float lv)
-{
-    return asinf(Clampf(-1.0f, lv, 1.0f));
-}
+DMC_LOC float eASin(const float lv) { return asinf(Clampf(-1.0f, lv, 1.0f)); }
 
 DMC_LOC float eATan(const float lv)
 {
@@ -81,10 +72,7 @@ DMC_LOC float eATan(const float lv)
     return myatan2f(lv, 1.0f);
 }
 
-DMC_LOC float eATan2(const float lv, const float rv)
-{
-    return myatan2f(lv, rv);
-}
+DMC_LOC float eATan2(const float lv, const float rv) { return myatan2f(lv, rv); }
 
 DMC_LOC float eBitNot(const float lv)
 {
@@ -93,45 +81,24 @@ DMC_LOC float eBitNot(const float lv)
     return ToFloat(~ll);
 }
 
-DMC_LOC float eCbrt(const float lv)
-{
-    return (lv > 0.0f) ? powf(lv, 1.0f / 3.0f) : 0.0f;
-}
+DMC_LOC float eCbrt(const float lv) { return (lv > 0.0f) ? powf(lv, 1.0f / 3.0f) : 0.0f; }
 
-DMC_LOC float eClamp(const float lv)
-{
-    return Saturate(lv);
-}
+DMC_LOC float eClamp(const float lv) { return Saturate(lv); }
 
-DMC_LOC float eCos(const float lv)
-{
-    return cosf(lv);
-}
+DMC_LOC float eCos(const float lv) { return cosf(lv); }
 
-DMC_LOC float eCube(const float lv)
-{
-    return lv * lv * lv;
-}
+DMC_LOC float eCube(const float lv) { return lv * lv * lv; }
 
-DMC_LOC float eDiv(const float lv, const float rv)
-{
-    return (rv != 0.0f) ? lv / rv : 0.0f;
-}
+DMC_LOC float eDiv(const float lv, const float rv) { return (rv != 0.0f) ? lv / rv : 0.0f; }
 
-DMC_LOC float eExp(const float lv)
-{
-    return expf(lv);
-}
+DMC_LOC float eExp(const float lv) { return expf(lv); }
 
 DMC_LOC float eLn(const float lv)
 {
     return (lv == 0.0f) ? 0.0f : logf(fabsf(lv)); // Note the absolute value here.
 }
 
-DMC_LOC float eMinus(const float lv, const float rv)
-{
-    return lv - rv;
-}
+DMC_LOC float eMinus(const float lv, const float rv) { return lv - rv; }
 
 DMC_LOC float eMod(const float lv, const float rv)
 {
@@ -147,10 +114,7 @@ DMC_LOC float eMod(const float lv, const float rv)
 #endif
 }
 
-DMC_LOC float eMult(const float lv, const float rv)
-{
-    return lv * rv;
-}
+DMC_LOC float eMult(const float lv, const float rv) { return lv * rv; }
 
 DMC_LOC float eOr(const float lv, const float rv)
 {
@@ -160,10 +124,7 @@ DMC_LOC float eOr(const float lv, const float rv)
     return ToFloat(ll | rr);
 }
 
-DMC_LOC float ePlus(const float lv, const float rv)
-{
-    return lv + rv;
-}
+DMC_LOC float ePlus(const float lv, const float rv) { return lv + rv; }
 
 DMC_LOC float ePow(const float lv, const float rv)
 {
@@ -180,20 +141,11 @@ DMC_LOC float ePow(const float lv, const float rv)
         return res;
 }
 
-DMC_LOC float eRound(const float lv)
-{
-    return (lv < 0.5f) ? 0.0f : 1.0f;
-}
+DMC_LOC float eRound(const float lv) { return (lv < 0.5f) ? 0.0f : 1.0f; }
 
-DMC_LOC float eSin(const float lv)
-{
-    return sinf(lv);
-}
+DMC_LOC float eSin(const float lv) { return sinf(lv); }
 
-DMC_LOC float eSqr(const float lv)
-{
-    return lv * lv;
-}
+DMC_LOC float eSqr(const float lv) { return lv * lv; }
 
 DMC_LOC float eSqrt(const float lv)
 {
@@ -205,10 +157,7 @@ DMC_LOC float eTan(const float lv)
     return tanf(eMod(lv, E_PI)); // Note the fmod here. tan is very unstable without it.
 }
 
-DMC_LOC float eUnaryMinus(const float lv)
-{
-    return -lv;
-}
+DMC_LOC float eUnaryMinus(const float lv) { return -lv; }
 
 DMC_LOC float eXOr(const float lv, const float rv)
 {
@@ -217,5 +166,4 @@ DMC_LOC float eXOr(const float lv, const float rv)
 
     return ToFloat(ll ^ rr);
 }
-
 }; // namespace

@@ -7,12 +7,12 @@
 
 #include <deque>
 
-// For 4K, good values are 364 and 1288.
-const int THUMB_WID_HGT = 160; // Width and height of thumbnail images
-const int FINAL_WID_HGT = 512; // Default width and height of final images
+// const int THUMB_WID_HGT = 160; // Width and height of thumbnail images
+// const int FINAL_WID_HGT = 512; // Default width and height of final images
+const int THUMB_WID_HGT = 364;  // Width and height of thumbnail images
+const int FINAL_WID_HGT = 1288; // Default width and height of final images
 
-class RenderManager
-{
+class RenderManager {
 public:
     int thWid, thHgt;       // Size of thumbnail images
     Quality_t thumbQuality; // Rendering quality of thumbnail images

@@ -14,8 +14,7 @@
 
 #include <string>
 
-class Expr
-{
+class Expr {
 public:
     Expr* left;
     Expr* right;

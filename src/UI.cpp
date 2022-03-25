@@ -8,12 +8,22 @@
 #include "MathStyle.h"
 #include "RenderManager.h"
 
+// OpenGL
 #include "GL/glew.h"
 
 // This needs to come after GLEW
 #include "GL/freeglut.h"
 
 #include <sstream>
+
+// For 4K:
+const int HARDCODED_WIN_WID = 3840, HARDCODED_WIN_HGT = 2224;
+// Square: -thsize 364 364 -size 1288 1288
+// Horizontal: -thsize 396 247 -size 1459 911 (1.6) Offline: -size 3840 2400 (Dell XPS 17 4K: 3840 x 2400)
+// Vertical: -thsize 256 554 -size 1014 2194 (0.46208) Offline: -size 1170 2532 (iPhone 12 Pro: 1170 x 2532)
+
+// For 1080p
+// const int HARDCODED_WIN_WID = 1920, HARDCODED_WIN_HGT = 1017;
 
 extern Counters* C;
 extern Evolver* Evo;
@@ -28,60 +38,27 @@ const int KEY_OFFSET = 1000;
 ////////////////////////////////////////////////////////
 // GLUT Callbacks
 
-void cbglutDisplay(void)
-{
-    GUI->Display();
-}
+void cbglutDisplay(void) { GUI->Display(); }
 
-void cbglutIdle()
-{
-    GUI->Idle();
-}
+void cbglutIdle() { GUI->Idle(); }
 
-void cbglutKeyPress(unsigned char key, int x, int y)
-{
-    GUI->GeneralOps(static_cast<int>(key), x, y);
-}
+void cbglutKeyPress(unsigned char key, int x, int y) { GUI->GeneralOps(static_cast<int>(key), x, y); }
 
-void cbglutMenuStatus(int bob, int x, int y)
-{
-    GUI->MenuStatus(bob, x, y);
-}
+void cbglutMenuStatus(int bob, int x, int y) { GUI->MenuStatus(bob, x, y); }
 
-void cbglutMotion(int x, int y)
-{
-    GUI->ClickDragMotion(x, y);
-}
+void cbglutMotion(int x, int y) { GUI->ClickDragMotion(x, y); }
 
-void cbglutPassiveMotion(int x, int y)
-{
-    GUI->PassiveMotion(x, y);
-}
+void cbglutPassiveMotion(int x, int y) { GUI->PassiveMotion(x, y); }
 
-void cbglutMouse(int button, int state, int x, int y)
-{
-    GUI->Mouse(button, state, x, y);
-}
+void cbglutMouse(int button, int state, int x, int y) { GUI->Mouse(button, state, x, y); }
 
-void cbglutMouseWheel(int wheel, int direction, int x, int y)
-{
-    GUI->MouseWheel(wheel, direction, x, y);
-}
+void cbglutMouseWheel(int wheel, int direction, int x, int y) { GUI->MouseWheel(wheel, direction, x, y); }
 
-void cbglutReshape(int w, int h)
-{
-    GUI->Reshape(w, h);
-}
+void cbglutReshape(int w, int h) { GUI->Reshape(w, h); }
 
-void cbglutSpecialKeyPress(int key, int x, int y)
-{
-    GUI->GeneralOps(key + KEY_OFFSET, x, y);
-}
+void cbglutSpecialKeyPress(int key, int x, int y) { GUI->GeneralOps(key + KEY_OFFSET, x, y); }
 
-void cbglutMenuPress(int c)
-{
-    GUI->GeneralOps(c, -1, -1);
-}
+void cbglutMenuPress(int c) { GUI->GeneralOps(c, -1, -1); }
 
 ////////////////////////////////////////////////////////
 // Public Members
@@ -113,10 +90,7 @@ UI::UI(int& argc, char** argv)
     StartUI(argc, argv);
 }
 
-void UI::GetOpenGLVersion(int argc, char** argv)
-{
-    OpenGLVersion();
-}
+void UI::GetOpenGLVersion(int argc, char** argv) { OpenGLVersion(); }
 
 void UI::StartUI(int& argc, char** argv)
 {
@@ -216,8 +190,7 @@ void UI::MainLoop()
 {
     SetTitle();
     // glutReshapeWindow(RMan->thWid * m_winImgsX + RMan->finalWid, std::max(RMan->thHgt * m_winImgsY, RMan->finalHgt));
-    // glutReshapeWindow(3840, 2066); // For 4K
-    glutReshapeWindow(1920, 1017); // For 4K
+    glutReshapeWindow(HARDCODED_WIN_WID, HARDCODED_WIN_HGT);
 
     glutMainLoop();
 }
@@ -307,7 +280,8 @@ void UI::Display()
 
     MathIndividual::shp mind(std::dynamic_pointer_cast<MathIndividual>(m_curIndiv));
     const int RIBBON_HEIGHT = 20;
-    if (mind && (mind->ColorSpace == SPACE_COLMAP || mind->ColorSpace == SPACE_TONEMAP_COLMAP)) DrawCMap(&(mind->CMap), m_finalX, m_finalY - RIBBON_HEIGHT, m_finalX + RMan->finalWid, m_finalY);
+    if (mind && (mind->ColorSpace == SPACE_COLMAP || mind->ColorSpace == SPACE_TONEMAP_COLMAP))
+        DrawCMap(&(mind->CMap), m_finalX, m_finalY - RIBBON_HEIGHT, m_finalX + RMan->finalWid, m_finalY);
 
     // Display text
     DisplayText(MakeText());
@@ -372,7 +346,8 @@ void UI::PassiveMotion(int x, int y)
 
     if (m_curIndiv == NULL) return; // Not hovering on an individual
 
-    if (m_finalRenderOnHover || m_curIndiv->FinalImD()->imDone()) RMan->PushToFinalRenderQueue(m_curIndiv); // Even if it's already rendered, list it here for display
+    if (m_finalRenderOnHover || m_curIndiv->FinalImD()->imDone())
+        RMan->PushToFinalRenderQueue(m_curIndiv); // Even if it's already rendered, list it here for display
 }
 
 void UI::ClickDragMotion(int x, int y)
@@ -430,12 +405,14 @@ void UI::Reshape(int w, int h)
 {
     if (w == 0 || h == 0) return;
 
-    std::cerr << w << "x" << h << '\n';
+    std::cerr << "Reshape: " << w << "x" << h;
+    std::cerr << " -thsize " << RMan->thWid << " " << RMan->thHgt;
+    std::cerr << " -size " << RMan->finalWid << " " << RMan->finalHgt << '\n';
 
     // Compute number of thumbnails that fit now
-    m_winImgsX = std::max(3, (w - RMan->finalWid) / RMan->thWid);
+    m_winImgsX = max(3, (w - RMan->finalWid) / RMan->thWid);
     m_winImgsY = h / RMan->thHgt;
-    m_childRows = std::max(1, std::min((m_winImgsY - PARENT_ROWS) / 2, MAX_CHILD_ROWS));
+    m_childRows = clamp((m_winImgsY - PARENT_ROWS) / 2, 1, MAX_CHILD_ROWS);
 
     m_winWid = w;
     m_winHgt = h;
@@ -588,7 +565,8 @@ void UI::GeneralOps(int c, int x, int y)
     case GLUT_KEY_DOWN + KEY_OFFSET: {
         int zooSize = static_cast<int>(Pop->sizeZoo());
         int zooRows = static_cast<int>(ceilf(zooSize / static_cast<float>(m_winImgsX)));
-        if (m_zooRowOffset < zooRows - ZOO_Y(m_winImgsY)) m_zooRowOffset++; // It's ZOO_Y(m_winImgsY) because we know there are at least that many rows that can't be offscreen zoo.
+        if (m_zooRowOffset < zooRows - ZOO_Y(m_winImgsY))
+            m_zooRowOffset++; // It's ZOO_Y(m_winImgsY) because we know there are at least that many rows that can't be offscreen zoo.
     } break;
     case GLUT_KEY_UP + KEY_OFFSET:
         if (m_zooRowOffset >= 1) m_zooRowOffset--;
@@ -647,14 +625,14 @@ void UI::DrawTextRow(const std::string& text, int x, int y, void* font /*= GLUT_
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
 
-    // drop shadow
+    // Drop shadow
     glColor3f(0, 0, 0);
     // Shift shadow one pixel to the lower right.
     glRasterPos3i(x + 1, y + 1, -1);
 
     for (std::string::const_iterator it = text.begin(); it != text.end(); ++it) glutBitmapCharacter(font, *it);
 
-    // main text
+    // Main text
     glColor3f(1.0f, 1.0f, 1.0f);
     glRasterPos3i(x, y, -1);
 
@@ -690,7 +668,8 @@ bool UI::VerifyChildren(size_t numWanted)
     while (Pop->sizeChildren() < numWanted) {
         madeSome = true;
         // Autoevolving uses Zoo as parents, rather than Parents.
-        // Pop->insertChildren(Evo->Generate(m_autoEvolve ? Pop->beginZoo() : Pop->beginParents(), m_autoEvolve ? Pop->endZoo() : Pop->endParents(), m_autoEvolve)); // Generate a new child.
+        // Pop->insertChildren(Evo->Generate(m_autoEvolve ? Pop->beginZoo() : Pop->beginParents(), m_autoEvolve ? Pop->endZoo() : Pop->endParents(),
+        // m_autoEvolve)); // Generate a new child.
         Pop->insertChildren(Evo->Generate(Pop->beginParents(), Pop->endParents(), m_autoEvolve)); // Generate a new child.
     }
     return madeSome;
@@ -773,15 +752,9 @@ bool UI::AmChild(const int x, const int y)
     return (row < m_childRows) && x < m_finalX;
 }
 
-bool UI::AmFinal(const int x, const int y)
-{
-    return x >= m_finalX && y >= m_finalY && x <= m_finalX + RMan->finalWid && y <= m_finalY + RMan->finalHgt;
-}
+bool UI::AmFinal(const int x, const int y) { return x >= m_finalX && y >= m_finalY && x <= m_finalX + RMan->finalWid && y <= m_finalY + RMan->finalHgt; }
 
-int UI::ZOO_Y(const int ImgsY)
-{
-    return ImgsY - PARENT_ROWS - m_childRows;
-}
+int UI::ZOO_Y(const int ImgsY) { return ImgsY - PARENT_ROWS - m_childRows; }
 
 size_t UI::SetCurIndiv(const int x, const int y)
 {
@@ -838,8 +811,8 @@ void UI::SetTitle()
 
     int zooOfs = m_zooRowOffset * m_winImgsX;
     std::ostringstream ost;
-    ost << m_winTitle << " Sort by: " << SortByNames[m_popSortBy] << "   " << (m_finalRenderOnHover ? " Final Rendering    " : "") << (m_autoEvolve ? " autoEvolve    " : "") << ChannelNames[m_curChan]
-        << "    "
+    ost << m_winTitle << " Sort by: " << SortByNames[m_popSortBy] << "   " << (m_finalRenderOnHover ? " Final Rendering    " : "")
+        << (m_autoEvolve ? " autoEvolve    " : "") << ChannelNames[m_curChan] << "    "
         << "Variability: " << SEng->getVariability() << "    Row: " << zooOfs << " Total Created: " << Evo->IndivsCreated();
     glutSetWindowTitle(ost.str().c_str());
 }

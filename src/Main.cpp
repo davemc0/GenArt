@@ -1,37 +1,37 @@
 // This is the genetic art main program.
-// Copyright David K. McAllister, 1998 - 2008.
+// Copyright David K. McAllister, 1998 - 2008, 2022.
 
-// TODO
-// Color: Fix number of colors in a ColorMap to a constant (8?), but be able to parse and remap any size for manual tweaking
-// Color: Remove invisible ColorMap entries by scaling the Exprs. This prevents junk DNA and increases resolution of specifying colors
+// TODO:
+// Bug: Window layout is wonky with non-square sizes
 // Color: Crossover ColorMaps at array entries, not spans
-// Color: Improve color levels
-// UI: Eye dropper to sample a color and click to paint it in a color map
-
+// Color: Fix number of colors in a ColorMap to a constant (8?), but be able to parse and remap any size for manual tweaking
+// Color: Improve color levels // What did I mean by this?
+// Color: Remove invisible ColorMap entries by scaling the Exprs. This prevents junk DNA and increases resolution of specifying colors
 // Evo: Evolve an image so its histogram matches a ColorMap
 // Evo: Fix Evolution
 // Evo: When breeding a color mapped child of a non-color mapped parent, use palette generator to compute parent's color map
 // Expr: ?: operator is ternary. Try (A>0 ? A : B)
-// Expr: tex operator. How to handle multiple output channels?
-// Expr: min and max operators
 // Expr: Output an expression as a .dot file to visualize
-
-// Opt: Automatic way to discover that a subexpression is useless, not just const: Abs([1,2]) => [1,2] ; If 0<=f(x)<=1 then Clamp(f(x)) => f(x).
-// Opt: Use sIval for IFS when appropriate.
-// Opt: Replace subexpressions with linear ramp, not just const, that approximates a more complex expression. Test result on whole equation, not just subexpression.
+// Expr: min and max operators
+// Expr: tex operator. How to handle multiple output channels?
+// Opt: Automatic way to discover that a subexpression is useless, not just const: Abs([1,2]) => [1,2] ; Clamp([0,1]) => [0,1].
+// Opt: Exprs aren't getting put in canonical order if the count would increase. Need a mode to do just safe opts.
 // Opt: Halton sequence for NumOpt
-// Opt: Exprs aren't getting put in canonical order if the count would increase. Need a mode to do just safe opts
-
+// Opt: Replace subexpression with linear gradient, not just const, that approximates a more complex expression.
+// Opt: Test subexpression replacement on whole equation, not just subexpression.
+// Opt: Use sIval for IFS when appropriate.
 // UI: A button to aggressively round off constants in this individual // Can't remember why. - Artistic intent?
+// UI: Eye dropper to sample a color and click to paint it in a color map
 // UI: Hover and interact with big image
+// UI: Save backup files to temp dir
 // UI: Sometimes clicking on an image to move it doesn't work. It's shortly after pressing space, but the children are done rendering.
-// Bug: Window layout is wonky with non-square sizes
 
 // REJECTED:
 // Expr: Improved Perlin Noise operator. No; too complex on GPU
 // Expr: New variable: theta. No; don't want to add an atan2 per pixel.
 // Opt: tan acos A => / sqrt - 1 sqr A A etc. It's not simpler, and there are two A subexprs.
-// Opt: Sometimes do the next opt pass based on the current, sometimes based on the best, sometimes original Expr. No; idea is that currrent expr is sufficiently mutable.
+// Opt: Sometimes do the next opt pass based on the current, sometimes based on the best, sometimes original Expr. No; idea is that currrent expr is
+// sufficiently mutable.
 
 #include "AutoScorer.h"
 #include "Counters.h"
@@ -76,6 +76,7 @@ static void Usage(const char* message = NULL, const bool Exit = true)
     std::cerr << "-evolveimg <im.jpg>       Specify an image to evolve to be like\n";
     std::cerr << "-noopt                    Don't optimize expressions\n";
     std::cerr << "-test                     Run weird tests\n";
+    std::cerr << "-testex fname.txt         Run expression tests with input list of expressions\n";
 
     std::cerr << "\nAll GLUT arguments must come after all app. arguments.\n\n";
 
@@ -99,9 +100,11 @@ static void Args(int& argc, char** argv)
     GUI = new UI(argc, argv);
 
     for (int i = 1; i < argc; i++) {
-        if (std::string(argv[i]) == "-h" || std::string(argv[i]) == "-help") {
+        std::string starg(argv[i]);
+
+        if (starg == "-h" || starg == "-help") {
             Usage();
-        } else if (std::string(argv[i]) == "-rendersave") {
+        } else if (starg == "-rendersave") {
             size_t idx = atoi(argv[i + 1]);
             if (idx > 10000) {
                 int IDNum = (int)idx; // They specified an IDNum, so search for the index
@@ -114,35 +117,35 @@ static void Args(int& argc, char** argv)
             Pop->getZoo(idx)->requestSave();
             RMan->PushToFinalRenderQueue(Pop->getZoo(idx));
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-rendersaveall") {
+        } else if (starg == "-rendersaveall") {
             size_t idx = atoi(argv[i + 1]);
             if (idx < 0 || idx > Pop->sizeZoo()) Usage("Must specify a population file before -rendersaveall and the index must be valid.");
             RMan->PushAllToFinalRenderQueue(idx);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-anim") {
+        } else if (starg == "-anim") {
             size_t idx = atoi(argv[i + 1]);
             if (idx < 0 || idx > Pop->sizeZoo()) Usage("Must specify a population file before -anim and the index must be valid.");
             RMan->PushAnimation(Pop->getZoo(idx));
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-evolveimg") {
+        } else if (starg == "-evolveimg") {
             if (Evo) delete Evo;
             Evo = new Evolver(new ImageSimilarityAutoScorer(new uc4Image(argv[i + 1])));
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-seed") {
+        } else if (starg == "-seed") {
             unsigned int seed = atoi(argv[i + 1]);
             unsigned int s = SRand(seed);
             std::cerr << "Using Seed = " << s << '\n';
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-device") {
+        } else if (starg == "-device") {
             CUDADevice = atoi(argv[i + 1]);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-test") {
+        } else if (starg == "-test") {
             Test();
             RemoveArgs(argc, argv, i);
-        } else if (std::string(argv[i]) == "-testex") {
+        } else if (starg == "-testex") {
             TestExpressions(argv[i + 1]);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-thsize") {
+        } else if (starg == "-thsize") {
             RMan->thWid = atoi(argv[i + 1]);
             float a = atof(argv[i + 2]);
             if (a < 3.0f)
@@ -155,7 +158,7 @@ static void Args(int& argc, char** argv)
 
             Pop->ClearImages();
             RemoveArgs(argc, argv, i, 3);
-        } else if (std::string(argv[i]) == "-size") {
+        } else if (starg == "-size") {
             RMan->finalWid = atoi(argv[i + 1]);
             float a = atof(argv[i + 2]);
             if (a < 3.0f)
@@ -168,31 +171,31 @@ static void Args(int& argc, char** argv)
 
             Pop->ClearImages();
             RemoveArgs(argc, argv, i, 3);
-        } else if (std::string(argv[i]) == "-gpuinfo") {
+        } else if (starg == "-gpuinfo") {
             GUI->GetOpenGLVersion(argc, argv);
             getCUDADeviceInfo();
             exit(0);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-fmt") {
+        } else if (starg == "-fmt") {
             RMan->imageSaveFormat = argv[i + 1];
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-qual") {
+        } else if (starg == "-qual") {
             Quality_t Q;
             Q.MinSamples = atof(argv[i + 1]);
             RMan->setQuality(RMan->finalQuality, Q);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-thqual") {
+        } else if (starg == "-thqual") {
             Quality_t Q;
             Q.MinSamples = atof(argv[i + 1]);
             RMan->setQuality(RMan->thumbQuality, Q);
             RemoveArgs(argc, argv, i, 2);
-        } else if (std::string(argv[i]) == "-noopt") {
+        } else if (starg == "-noopt") {
             MSEng->setOptimize(false);
             RemoveArgs(argc, argv, i);
-        } else if (std::string(argv[i]) == "-colormapimg") {
+        } else if (starg == "-colormapimg") { // Makes an indiv and loads it like a gnx file
             MSEng->ImageColorMapToIndiv(argv[i + 1], atoi(argv[i + 2]));
             RemoveArgs(argc, argv, i, 3);
-        } else if (std::string(argv[i]) == "-colormapsonly") {
+        } else if (starg == "-colormapsonly") {
             onlyColorMaps = true;
             RemoveArgs(argc, argv, i, 1);
         } else if (argv[i][0] == '-') {

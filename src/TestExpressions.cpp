@@ -4,30 +4,28 @@
 #include "ExprTools.h"
 #include "MathHelpers.h"
 #include "MathStyleCUDARender.h"
+#include "Test.h"
 
+#include <Math/BinaryRep.h>
 #include <Math/Halton.h>
 #include <Math/Random.h>
 #include <Util/Timer.h>
+#include <cmath>
 #include <fstream>
-
-#ifdef DMC_MACHINE_win
-#include <time.h>
-#endif
-#include <math.h>
 
 namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Test Expression Optimization
 
-// I finally arrived at the optimization rule that I would evaluate expressions with whatever modifications to the input I need, such as Sqrt(Abs(f)), rather than Sqrt(f),
-// but I would optimize using theoretical rules, ignorant of the hacks on the input side.
-// This causes the numerical testing of the symbolic optimization to return mismatches, but I don't care anymore.
+// I finally arrived at the optimization rule that I would evaluate expressions with whatever modifications to the input I need, such as Sqrt(Abs(f)), rather
+// than Sqrt(f), but I would optimize using theoretical rules, ignorant of the hacks on the input side. This causes the numerical testing of the symbolic
+// optimization to return mismatches, but I don't care anymore.
 
 // Raising a negative number to a fractional power is undefined. Includes sqrt(neg). With ePow if base is negative then round the exponent toward zero.
 // Need to make finite before checking equivalence.
-// pow 0 acos ifs x x : The rhs is non-const but evaluates to 0, so it should apply the rule "Anything to the 0 = 1", but instead applies "0 to the anything but 0 is 0".
+// pow 0 acos ifs x x : Rhs is non-const but evaluates to 0, so should apply "Anything to the 0 = 1", but instead applies "0 to the anything but 0 is 0".
 // | y y : Simplifies to y, but mismatches because y != | y y quantized to 16-bit normalized.
-// XOr simplifies to Clamp if its arg is < 0 and to BitNot if its arg is > 1.
+// XOr(a,b) simplifies to Clamp(a) if b < 0 and to BitNot(a) if b > 1, and vice-versa.
 // Sqrt evaluates Sqrt(Abs(x)), and when simplifying, the abs gets lost.
 // Getting a really big intermediate value can cause error with a high-frequency function: sin * tan ln / y r / x r
 
@@ -38,7 +36,7 @@ namespace {
 // x = 0.0 and y > 0.0 : 0
 // x < 0.0 and y is frac | IND
 
-// pow round x round y
+// Pow round x round y
 //     CPU GPU
 // 0^0=1   0
 // 1^0=1   1
@@ -48,25 +46,24 @@ namespace {
 // Everything does a straightforward evaluation except the following:
 // ACos:    { return acosf(Clampf(-1.0f, left->Eval(VV), 1.0f)); }
 // ASin:    { return asinf(Clampf(-1.0f, left->Eval(VV), 1.0f)); }
-// And:     { unsigned short ll = ToShort(left->Eval(VV)); unsigned short rr = ToShort(right->Eval(VV)); return ToFloat(ll & rr); }
+// And:     { unsigned short ll = ToInt(left->Eval(VV)); unsigned short rr = ToInt(right->Eval(VV)); return ToFloat(ll & rr); }
 // Clamp:   { return Clampf(0.0f, left->Eval(VV), 1.0f); }
 // Div:     { float r = right->Eval(VV); if(r != 0.0f) return left->Eval(VV) / r; else return 0.0f; }
 // IFS:     weird
 // Ln:      return (lefval == 0.0f) ? 0.0f : logf(fabsf(lefval));
 // Mod:     { float r = right->Eval(VV); if(r != 0.0f) return fmodf(left->Eval(VV), r); else return 0.0f; }
-// Or:      { unsigned short ll = ToShort(left->Eval(VV)); unsigned short rr = ToShort(right->Eval(VV)); return ToFloat(ll | rr); }
+// Or:      { unsigned short ll = ToInt(left->Eval(VV)); unsigned short rr = ToInt(right->Eval(VV)); return ToFloat(ll | rr); }
 // Round:   { return left->Eval(VV) < 0.5f ? 0.0f : 1.0f; }
 // Sqrt:    { return sqrtf(fabsf(left->Eval(VV))); }
 // Tan:     { return tanf(fmod(left->Eval(VV), 3.141592653589f)); }
-// XOr:     { unsigned short ll = ToShort(left->Eval(VV)); unsigned short rr = ToShort(right->Eval(VV)); return ToFloat(ll ^ rr); }
+// XOr:     { unsigned short ll = ToInt(left->Eval(VV)); unsigned short rr = ToInt(right->Eval(VV)); return ToFloat(ll ^ rr); }
 // Pow:     { see ePow }
 // ATan2:
 
 //////////////////////////////////////
 // Input Functors
 
-class GetTestExprFromFile
-{
+class GetTestExprFromFile {
 public:
     GetTestExprFromFile(VarVals_t& vvals_, std::ifstream& inf_) : inf(inf_), vvals(vvals_) {}
 
@@ -89,6 +86,7 @@ private:
 };
 
 std::string ExpressionsToTest[] = {
+    // clang-format off
     "* * x 0.87 2.5",
     "* ifs ln sqrt tan / 0.299875 x ln ln sqrt - x y 2",
     "* pow sin x 3"
@@ -171,10 +169,10 @@ std::string ExpressionsToTest[] = {
     "| y y", // => y, which doesn't have the float2int convert.
     "| ~ + 0.670788 0.40931 cube cube atan2 y 0.371026",
     "| ~ + 0.670788 0.40931 y",
+    // clang-format on
 };
 
-class GetTestExprFromList
-{
+class GetTestExprFromList {
 public:
     GetTestExprFromList(VarVals_t vvals_) : vvals(vvals_) { index = 0; }
 
@@ -194,8 +192,7 @@ public:
     VarVals_t vvals;
 };
 
-class GetTestExprRandom
-{
+class GetTestExprRandom {
 public:
     GetTestExprRandom(VarVals_t vvals_, int max_exprs_ = 0) : vvals(vvals_)
     {
@@ -221,16 +218,14 @@ public:
 //////////////////////////////////////
 // Test Items (symbolic optimization, numerical optimization, etc.)
 
-class TestItemNull
-{
+class TestItemNull {
 public:
     TestItemNull() {}
 
     Expr* operator()(Expr* A) { return A->Copy(); }
 };
 
-class TestItemOptimizer
-{
+class TestItemOptimizer {
 public:
     TestItemOptimizer(VarVals_t vvals_, int Steps_ = 531, float maxAbsErr_ = 0.01f) : Steps(Steps_), maxAbsErr(maxAbsErr_), MinVV(vvals_), MaxVV(vvals_)
     {
@@ -258,8 +253,7 @@ private:
     float maxAbsErr;
 };
 
-class TestItemTokenizedEval
-{
+class TestItemTokenizedEval {
 public:
     TestItemTokenizedEval() {}
 
@@ -291,8 +285,7 @@ public:
 //////////////////////////////////////
 // Equality Criteria
 
-class RelAbsComparator
-{
+class RelAbsComparator {
 public:
     RelAbsComparator(bool RelQuant_ = false, bool AbsQuant_ = false, float rel_ = 0.0001f, float abs_ = 0.0001f, bool either_ = false) :
         RelQuant(RelQuant_), AbsQuant(AbsQuant_), RelErr(rel_), AbsErr(abs_), EitherMetric(either_)
@@ -325,22 +318,12 @@ public:
     }
 
 private:
-    union ftoi
-    {
-        int i;
-        unsigned int ui;
-        float f;
-    };
-
-    // Quantize to keep 16 MSBs of the float
+    // Quantize to keep 16 msbs of the float
     float QuantizeRelative(const float a)
     {
-        ftoi fi, fui;
-        fi.f = a;
+        unsigned int ui = 0xffff0000 & floatAsUint(a);
 
-        fui.ui = 0xffff0000 & fi.ui;
-
-        return fui.f;
+        return uintAsFloat(ui);
     };
 
     // Quantize to the nearest 1/65536
@@ -359,8 +342,7 @@ private:
 //////////////////////////////////////
 // Ways of sampling the variable domain
 
-class SamplerLoopRegular
-{
+class SamplerLoopRegular {
 public:
     SamplerLoopRegular(VarVals_t vvals_, RelAbsComparator RAC_, float sampleStep_ = 0.001f) : sampleStep(sampleStep_), Comp(RAC_), vvals(vvals_) {}
 
@@ -407,8 +389,7 @@ private:
     VarVals_t vvals;
 };
 
-class SamplerLoopRandom
-{
+class SamplerLoopRandom {
 public:
     SamplerLoopRandom(VarVals_t vvals_, RelAbsComparator RAC_, int numSamples_ = 100000) : numSamples(numSamples_), Comp(RAC_), vvals(vvals_) {}
 
@@ -417,7 +398,7 @@ public:
     {
         int failed = 0;
         for (int i = 0; i < numSamples; i++) {
-            for (size_t j = 0; j < vvals.vals.size(); j++) vvals.vals[j] = i == 0 ? 0.0f : DRandf();
+            for (size_t j = 0; j < vvals.vals.size(); j++) vvals.vals[j] = i == 0 ? 0.0f : frand();
             vvals.vals[2] = sqrtf(vvals.vals[0] * vvals.vals[0] + vvals.vals[1] * vvals.vals[1]);
 
             float aval = A->Eval(&vvals);
@@ -452,10 +433,12 @@ private:
     VarVals_t vvals;
 };
 
-class SamplerLoopInterval
-{
+class SamplerLoopInterval {
 public:
-    SamplerLoopInterval(VarVals_t vvals_, RelAbsComparator RAC_, int numSamples_ = 100000, int Steps_ = 531) : numSamples(numSamples_), Steps(Steps_), Comp(RAC_), VV(vvals_) {}
+    SamplerLoopInterval(VarVals_t vvals_, RelAbsComparator RAC_, int numSamples_ = 100000, int Steps_ = 531) :
+        numSamples(numSamples_), Steps(Steps_), Comp(RAC_), VV(vvals_)
+    {
+    }
 
     // Compares two expressions by stepping in regular intervals in the domain of the variables and returns the failing percentage
     double operator()(Expr* A, Expr* B)
@@ -501,7 +484,8 @@ private:
 
         bool fits = matches && !ival.empty() && !sival.empty();
         if (!fits) {
-            std::cerr << "FAIL: " << tostring(opI.spans[0]) << '\t' << tostring(opI.spans[1]) << "\tI: " << tostring(ival) << " S: " << tostring(sival) << " = " << A->Print(PREFIX) << '\n';
+            std::cerr << "FAIL: " << tostring(opI.spans[0]) << '\t' << tostring(opI.spans[1]) << "\tI: " << tostring(ival) << " S: " << tostring(sival) << " = "
+                      << A->Print(PREFIX) << '\n';
 #if 0
             extern bool DEBUGprint;
             DEBUGprint = true;
@@ -521,37 +505,6 @@ private:
         }
 
         return fits;
-    }
-
-    float randVal()
-    {
-        union
-        {
-            float f;
-            unsigned int i;
-        } u;
-        u.i = {(unsigned int)LRand()};
-
-        if (IsNaN(u.f)) return randVal();
-
-        switch (randn(16)) {
-        case 0: return std::numeric_limits<float>::infinity();
-        case 1: return 0.0f;
-        case 2: return 1.0f;
-        case 3: return 2.0f;
-        case 4: return E_PI;
-        case 5: return DRandf();
-        case 6: return DRandf(1.0f, 1000.0f);
-        case 7: return DRandf(1000.0f, 1e9f);
-        case 8: return -std::numeric_limits<float>::infinity();
-        case 9: return -0.0f;
-        case 10: return -1.0f;
-        case 11: return -2.0f;
-        case 12: return -E_PI;
-        case 13: return -DRandf();
-        case 14: return -DRandf(1.0f, 1000.0f);
-        default: return -DRandf(1000.0f, 1e9f);
-        }
     }
 
     // True if they match
@@ -582,12 +535,13 @@ private:
 //////////////////////////////////////
 // Result Actions (what to do when an expression matches or doesn't match
 
-class ResultActionLogFile
-{
+class ResultActionLogFile {
 public:
-    ResultActionLogFile(bool PrintErrors_, bool PrintAll_, std::ofstream& GoodEqnFile_, std::ofstream& BadEqnFile_, std::ofstream& GoodOptEqnFile_, std::ofstream& BadOptEqnFile_) :
-        maxFailPercent(0), m_tested(0), m_failed(0), m_printErrors(PrintErrors_), m_printAll(PrintAll_), m_goodEqnFile(GoodEqnFile_), m_badEqnFile(BadEqnFile_), m_goodOptEqnFile(GoodOptEqnFile_),
-        m_badOptEqnFile(BadOptEqnFile_)
+    ResultActionLogFile(bool PrintErrors_, bool PrintAll_, std::ofstream& GoodEqnFile_, std::ofstream& BadEqnFile_, std::ofstream& GoodOptEqnFile_,
+                        std::ofstream& BadOptEqnFile_) :
+        maxFailPercent(0),
+        m_tested(0), m_failed(0), m_printErrors(PrintErrors_), m_printAll(PrintAll_), m_goodEqnFile(GoodEqnFile_), m_badEqnFile(BadEqnFile_),
+        m_goodOptEqnFile(GoodOptEqnFile_), m_badOptEqnFile(BadOptEqnFile_)
     {
     }
 
@@ -622,7 +576,6 @@ private:
     std::ofstream& m_goodOptEqnFile;
     std::ofstream& m_badOptEqnFile;
 };
-
 }; // namespace
 
 //////////////////////////////////////

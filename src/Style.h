@@ -7,8 +7,7 @@
 #include <string>
 
 // Describes the quality level for rendering the image
-struct Quality_t
-{
+struct Quality_t {
     float MinSamples;
 
     Quality_t(const float Min = 0) { MinSamples = Min; }
@@ -16,8 +15,7 @@ struct Quality_t
     bool operator!=(const Quality_t& A) const { return !(*this == A); }
 };
 
-class Style
-{
+class Style {
 public:
     Style();
     ~Style() {}

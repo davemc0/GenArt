@@ -21,10 +21,7 @@ const int MUTSIZE = 6;            // Make random subtrees during mutation about 
 const int MUTPROB = 5;            // Mutate about 1/MUTPROB of the nodes in an Expr each time
 const float CONST_PERTURB = 0.2f; // Add NRand(CONST_PERTURB) to constants
 
-inline float L2Norm(const f3Pixel& p)
-{
-    return sqrtf(dmcm::Sqr(p[0]) + dmcm::Sqr(p[1]) + dmcm::Sqr(p[2]));
-}
+inline float L2Norm(const f3Pixel& p) { return sqrtf(sqr(p[0]) + sqr(p[1]) + sqr(p[2])); }
 
 MathStyle::MathStyle()
 {
@@ -39,12 +36,9 @@ MathStyle::MathStyle()
     InitVVals(*m_VarVals);
 }
 
-MathStyle::~MathStyle()
-{
-    delete m_VarVals;
-}
+MathStyle::~MathStyle() { delete m_VarVals; }
 
-void MathStyle::LoadPopulation(const std::string & inFName)
+void MathStyle::LoadPopulation(const std::string& inFName)
 {
     std::cerr << "Loading " << inFName << '\n';
 
@@ -62,7 +56,7 @@ void MathStyle::LoadPopulation(const std::string & inFName)
         bool skip = false;
         for (auto ind = Pop->beginZoo(); ind != Pop->endZoo(); ind++) {
             if ((*ind)->equal(*newInd)) {
-                std::cerr << "Equal ones: " << (*ind)->stringDisplay() << '\n' << newInd->stringDisplay() << '\n';
+                std::cerr << "\nEqual ones:\n" << (*ind)->stringDisplay() << '\n' << newInd->stringDisplay() << '\n';
                 skip = true;
                 break;
             } else if ((*ind)->IDNum == newInd->IDNum) {
@@ -79,27 +73,24 @@ void MathStyle::LoadPopulation(const std::string & inFName)
     std::cerr << "TotalSizeBeforeOpt=" << getTotalSizeBeforeOpt() << " TotalSizeAfterOpt=" << getTotalSizeAfterOpt() << '\n';
 }
 
-std::string MathStyle::getPopFileSuffix()
-{
-    return ".gnx";
-}
+std::string MathStyle::getPopFileSuffix() { return ".gnx"; }
 
 MathIndividual::shp MathStyle::ImageColorMapToIndiv(const char* imgFName, int colorMapSize)
 {
     ColorMap<f3Pixel> CMap = GetColorMapFromImage(imgFName, colorMapSize);
-
-    std::string G("+ x 0.01");
+    int c = (int)CMap.size();
+    std::string G = "* / 1 " + std::to_string(c - 1) + " - * " + std::to_string(c) + " x % * " + std::to_string(c) + " x 1";
+    // std::string G("x");
     std::string R("0"), B("0");
 
-    MathIndividual::shp ind(new MathIndividual(R, G, B, &CMap, SPACE_COLMAP, 1.1f, -1, 1, -1, -1, -1, -1, 2));
+    MathIndividual::shp ind(new MathIndividual(R, G, B, &CMap, SPACE_COLMAP, 1.1f, -1, 1, -1, -1, 0, 0, 1));
+
+    Pop->insertZoo(ind);
 
     return ind;
 }
 
-ColorSpace_t MathStyle::chooseRandomColorSpace()
-{
-    return ColorSpace_t(randn(NUM_COLORSPACES));
-}
+ColorSpace_t MathStyle::chooseRandomColorSpace() { return ColorSpace_t(randn(NUM_COLORSPACES)); }
 
 Expr* MathStyle::BreedChannel(const MathIndividual::shp Aa, const MathIndividual::shp Bb, int chan, ColorSpace_t ColorSpace, const VarVals_t* VV)
 {
@@ -147,7 +138,7 @@ Expr* MathStyle::BreedChannel(const MathIndividual::shp Aa, const MathIndividual
         if (chanChoices.size() > 1) C->inc("Chan.One.Two");
         Expr* M = chanChoices[randn((int)chanChoices.size())];
 
-        float c = 2.0f * (DRandf() + 1.0f - m_variability);
+        float c = 2.0f * (frand() + 1.0f - m_variability);
         switch (int(c)) {
         case 0: C->inc("Chan.One.MutateExpr"); return MutateExpr(M, MUTPROB, MUTSIZE, CONST_PERTURB, VV);
         case 1: C->inc("Chan.One.PerturbConstants"); return M->Copy()->PerturbConstants(CONST_PERTURB);
@@ -242,7 +233,8 @@ Individual::shp MathStyle::BreedIndividual(int IDNum, int Generation, Individual
 
     ColorMap<f3Pixel>* CMap = BreedColorMap(Aa, Bb, ColorSpace);
 
-    MathIndividual::shp newInd(new MathIndividual(R, G, B, CMap, ColorSpace, DRandf(0.0f, 0.01f), IDNum, Generation, Aa ? Aa->IDNum : -1, Bb ? Bb->IDNum : -1, XMin, YMin, BoxWid));
+    MathIndividual::shp newInd(
+        new MathIndividual(R, G, B, CMap, ColorSpace, frand(0.0f, 0.01f), IDNum, Generation, Aa ? Aa->IDNum : -1, Bb ? Bb->IDNum : -1, XMin, YMin, BoxWid));
 
     delete CMap;
 
@@ -258,7 +250,7 @@ void RandomizeColorMapOrder(ColorMap<f3Pixel>& CMap)
 {
     size_t Siz = CMap.size();
     for (size_t i = 0; i < Siz; i++) {
-        size_t k = size_t(LRand(0, int(Siz)));
+        size_t k = size_t(irand(0, int(Siz)));
         f3Pixel Tmp = CMap[k];
         CMap[k] = CMap[i];
         CMap[i] = Tmp;
@@ -274,14 +266,11 @@ float ColorMapOrderScore(ColorMap<f3Pixel>& CMap)
 }
 
 // Compare two f3Pixels by luminance
-bool luminance_less(const f3Pixel& a, const f3Pixel& b)
-{
-    return a.luminance() < b.luminance();
-}
+bool luminance_less(const f3Pixel& a, const f3Pixel& b) { return a.luminance() < b.luminance(); }
 
 void FillColorMapRandom(ColorMap<f3Pixel>& CMap)
 {
-    for (size_t i = 0; i < CMap.size(); i++) CMap[i] = f3Pixel(DRandf(), DRandf(), DRandf());
+    for (size_t i = 0; i < CMap.size(); i++) CMap[i] = f3Pixel(frand(), frand(), frand());
 }
 
 void ReorderColorMap(ColorMap<f3Pixel>& CMap, ColorMapOrderings_t CMapReorderStyle)
@@ -307,7 +296,7 @@ void ReorderColorMap(ColorMap<f3Pixel>& CMap, ColorMapOrderings_t CMapReorderSty
         for (int j = 0; j < 100; j++) {
             RandomizeColorMapOrder(CMap);
             for (size_t i = 0; i < Siz * Siz * 20; i++) {
-                int k = LRand(0, int(Siz - 2));
+                int k = irand(0, int(Siz - 2));
                 float D0 = L2Norm(CMap[k] - CMap[k + 1]);
                 float D1 = L2Norm(CMap[k + 1] - CMap[k + 2]);
                 float D2 = L2Norm(CMap[k] - CMap[k + 2]);
@@ -347,7 +336,7 @@ ColorMap<f3Pixel> GetColorMapFromImage(const char* imgFName, int colorMapSize)
     while (Tmp1Img.size() > (400 * 400)) {
         f3Image TmpImg;
         Downsample2x2(TmpImg, Tmp1Img);
-        Tmp1Img=TmpImg;
+        Tmp1Img = TmpImg;
         // Tmp1Img.swap(TmpImg);
     }
     SampImg = Tmp1Img;
@@ -356,18 +345,21 @@ ColorMap<f3Pixel> GetColorMapFromImage(const char* imgFName, int colorMapSize)
     QP.maxColorPalette = CMap.size();
     QP.maxIters = QP.maxItersFast = 64;
     Quantizer<uc3Pixel, unsigned char> Qnt(SampImg.pp(), SampImg.size(), false, QP);
+    Qnt.GetColorMap();
 
     // Extract the image's ColorMap
+    std::cerr << CMap.size() << std::endl;
     for (size_t i = 0; i < CMap.size(); i++) {
         CMap[i] = Qnt.GetColorMap()[i]; // Converts ColorMap from f3Pixel to uc3Pixel.
-        std::cerr << CMap[i] << std::endl;
+        std::cerr << CMap[i];
     }
+    std::cerr << std::endl;
 
-    // ReorderColorMap(CMap, REORDER_SHORT);
+    ReorderColorMap(CMap, REORDER_SHORT);
 
     // This code is just for testing.
     Qnt.GetQuantizedTrueColorImage(SampImg.pp());
-    SampImg.Save("testing.jpg");
+    SampImg.Save("testing.png");
 
     return CMap;
 }
@@ -380,7 +372,7 @@ float* makePDF(int Sz, float scale)
     float sum = 0;
     // Sprinkle probability mass
     for (int i = 0; i < Sz; i++) {
-        p[i] = DRand();
+        p[i] = drand();
         sum += p[i];
     }
 
@@ -402,7 +394,7 @@ ColorMap<f3Pixel>* MutateColorMap(const ColorMap<f3Pixel>& Aa, float variability
 
     // Tweak each ColorMap entry by the alotted amount of the total variability
     for (size_t i = 0; i < Sz; i++)
-        (*M)[i] = f3Pixel(dmcm::Saturate(Aa[i].r() + DRandf(-p[i], p[i])), dmcm::Saturate(Aa[i].g() + DRandf(-p[i], p[i])), dmcm::Saturate(Aa[i].b() + DRandf(-p[i], p[i])));
+        (*M)[i] = f3Pixel(saturate(Aa[i].r() + frand(-p[i], p[i])), saturate(Aa[i].g() + frand(-p[i], p[i])), saturate(Aa[i].b() + frand(-p[i], p[i])));
 
     delete[] p;
 

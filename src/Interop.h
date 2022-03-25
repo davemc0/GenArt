@@ -2,8 +2,7 @@
 
 #include <Image/tImage.h>
 
-class uc4DImage : public uc4Image
-{
+class uc4DImage : public uc4Image {
 public:
     uc4DImage();
 

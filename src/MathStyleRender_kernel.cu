@@ -1,10 +1,6 @@
 // The main CUDA rendering kernel for MathStyle
 
 #include "Evaluator.h"
-
-// ColMapTexRef is used in RenderHelpers.h.
-texture<float4, 1, cudaReadModeElementType> ColMapTexRef; // Using a 2D texture is a HACK since the ColorMap is 1D. I think I did it to address a CUDA bug.
-
 #include "RenderHelpers.h"
 
 // Put clock count in alpha channel
@@ -29,10 +25,13 @@ __constant__ float2 ConstantRandomNums[NUM_SAMPLE_LOCS]; // Try in global memory
 // 20 regs main loop + evaluate
 
 #ifdef TEMPLATED_COLORSPACE
-template <int ColorSpace> __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int yofs, float stepxy, float Xmin, float Ymin, float MinSamples)
+template <int ColorSpace>
+__global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int yofs, float stepxy, float Xmin, float Ymin, float MinSamples,
+                             cudaTextureObject_t ColMapTexObj)
 #else
 // Regs += 3
-__global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int yofs, float stepxy, float Xmin, float Ymin, float MinSamples, int ColorSpace)
+__global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int yofs, float stepxy, float Xmin, float Ymin, float MinSamples,
+                             cudaTextureObject_t ColMapTexObj, int ColorSpace)
 #endif
 {
 #ifdef CLOCKS
@@ -77,7 +76,7 @@ __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int
         if (MinSamples <= 1) xo = yo = 0;
 #endif
 
-        float x = lxp + xo * stepxy; // could premultiply table by this.
+        float x = lxp + xo * stepxy; // Could premultiply table by this.
         float y = lyp + yo * stepxy;
         float r = sqrtf(x * x + y * y);
 
@@ -88,6 +87,7 @@ __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int
         // Rendering this equation at -size 2048 2048 -qual 100 100 100
         // Hard coded = 0.159s Evaluator = 3.720s CPU 4 core not hard coded  = 112.3s
         // 0.248 s vs. 2.6 s
+        // clang-format off
         red = 0.197278;
         grn = 0.647491 + (eLn(eMod(0.4343 * eLn(eSin(-eExp(eExp(eLn(eSin(eExp(eExp(eSin(x * y))))) + (eSin(2.0723 * x) - eTan(x))))) +
                                                 (eSin(eExp(eExp(eSin(eSqrt(r))))) + eDiv(eXOr(eMod(-1.99781 * (eMod(ePow(x, 0.725418), eClamp(eSqrt(y)))), ePow(0.156434, eSin(2.02173 * x))), x * y),
@@ -103,6 +103,7 @@ __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int
                       1)) +
              (eDiv(eXOr(eCube(2.43771 - 33.2563 * r), eMod(-2.16671 * (eMod(ePow(x, 0.787501), eClamp(eSqrt(y)))), ePow(0.178835, eSin(2.02401 * x)))), eExp(eSin(eExp(eExp(eSin(2.88095 * x) - y))))) +
               ePow(x - (eSqr(y) + 0.4343 * eLn(0.278156 - (x + y))), x)));
+        // clang-format on
 #else
         // Experiment to see how many regs Evaluate takes
         // This is basically a noop
@@ -114,7 +115,7 @@ __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int
         EvaluateTokenized(ConstantTokenStream, x, y, r, 0, red, grn, blu);
 #endif
 
-        f3Pixel FinalVal = ColorTransform(red, grn, blu, ColorSpace);
+        f3Pixel FinalVal = ColorTransform(red, grn, blu, ColorSpace, ColMapTexObj);
         // Experiment to see how many regs ColorTransform takes
         // If hardcoded, some of these up it from 17 to 19. If not hardcoded, still 23.
         // f3Pixel FinalVal(red, grn, blu);
@@ -136,15 +137,13 @@ __global__ void RenderKernel(uchar4* uc4DevPtr, int pitch, int wid, int hgt, int
 #else
     uchar4 uc4P = make_uchar4((unsigned char)SumSc.x, (unsigned char)SumSc.y, (unsigned char)SumSc.z, 0xff);
 #endif
-    uc4DevPtr[index] = uc4P; // pitch and index are in uc4s.
+    uc4DevPtr[index] = uc4P; // Pitch and index are in uc4s.
 }
 
-inline int iDivUp(int a, int b)
-{
-    return (a % b != 0) ? (a / b + 1) : (a / b);
-}
+inline int iDivUp(int a, int b) { return (a % b != 0) ? (a / b + 1) : (a / b); }
 
-void InvokeRenderKernel(uchar4* uc4DevPtr, size_t pitch, int wid, int hgt, int GridHgtInPix, int yofs, float BoxWid, float Xmin, float Ymin, float MinSamples, ColorSpace_t ColorSpace)
+void InvokeRenderKernel(uchar4* uc4DevPtr, size_t pitch, int wid, int hgt, int GridHgtInPix, int yofs, float BoxWid, float Xmin, float Ymin, float MinSamples,
+                        cudaTextureObject_t ColMapTexObj, ColorSpace_t ColorSpace)
 {
     dim3 threads(BLOCKDIM_X, BLOCKDIM_Y);
     dim3 grid(iDivUp(wid, BLOCKDIM_X), iDivUp(GridHgtInPix, BLOCKDIM_Y));
@@ -157,34 +156,39 @@ void InvokeRenderKernel(uchar4* uc4DevPtr, size_t pitch, int wid, int hgt, int G
 
 #ifdef TEMPLATED_COLORSPACE
     switch (ColorSpace) {
-    case 0: RenderKernel<0><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
-    case 1: RenderKernel<1><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
-    case 2: RenderKernel<2><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
-    case 3: RenderKernel<3><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
-    case 4: RenderKernel<4><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
-    case 5: RenderKernel<5><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples); break;
+    case 0: RenderKernel<0><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
+    case 1: RenderKernel<1><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
+    case 2: RenderKernel<2><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
+    case 3: RenderKernel<3><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
+    case 4: RenderKernel<4><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
+    case 5: RenderKernel<5><<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColMapTexObj); break;
     }
 #else
     RenderKernel<<<grid, threads, 0>>>(uc4DevPtr, pitchin, wid, hgt, yofs, stepxy, Xmin, Ymin, MinSamples, ColorSpace);
 #endif
 }
 
-void loadColorMapTexture(cudaArray* ColMapArray)
+cudaTextureObject_t loadColorMapTexture(cudaArray* ColMapArray)
 {
-    ColMapTexRef.normalized = true;
-    ColMapTexRef.filterMode = cudaFilterModeLinear;
-    ColMapTexRef.addressMode[0] = cudaAddressModeClamp;
-    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float4>();
-    ColMapTexRef.channelDesc = channelDesc;
+    cudaResourceDesc resDesc;
+    memset(&resDesc, 0, sizeof(resDesc));
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = ColMapArray;
 
-    // Bind the array to the texture
-    cudaBindTextureToArray(ColMapTexRef, ColMapArray, channelDesc);
+    cudaTextureDesc texDesc;
+    memset(&texDesc, 0, sizeof(texDesc));
+    texDesc.readMode = cudaReadModeElementType;
+    texDesc.normalizedCoords = true;
+    texDesc.filterMode = cudaFilterModeLinear;
+    texDesc.addressMode[0] = cudaAddressModeClamp;
+
+    cudaTextureObject_t tex = 0;
+    cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
+
+    return tex;
 }
 
-void loadTokensToConstant(const int* HostTokens, const int sizeofHostTokens)
-{
-    cudaMemcpyToSymbol(ConstantTokenStream, HostTokens, sizeofHostTokens);
-}
+void loadTokensToConstant(const int* HostTokens, const int sizeofHostTokens) { cudaMemcpyToSymbol(ConstantTokenStream, HostTokens, sizeofHostTokens); }
 
 void loadSampleLocsToConstant(const float2* Locs, const int sizeofLocs, const float2* Nums, const int sizeofNums)
 {
@@ -196,7 +200,7 @@ void loadSampleLocsToConstant(const float2* Locs, const int sizeofLocs, const fl
 // Test code
 
 #if 0
-__global__ 
+__global__
 void TestKernel(float *fDevPtr, int wid, float v)
 {
    // fDevPtr[0] = roundf(v);

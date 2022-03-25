@@ -15,15 +15,9 @@ interval::interval()
 
 interval::interval(const float v) : lower(v), upper(v) {}
 
-interval::interval(const float v0, const float v1)
-{
-    set(v0, v1);
-}
+interval::interval(const float v0, const float v1) { set(v0, v1); }
 
-void interval::set(const float v)
-{
-    lower = upper = v;
-}
+void interval::set(const float v) { lower = upper = v; }
 
 void interval::set(const float v1, const float v2)
 {
@@ -49,40 +43,19 @@ void interval::set_infinite()
     upper = infinity();
 }
 
-bool interval::contains(const float v) const
-{
-    return (v >= lower || lower == -infinity()) && (v <= upper || upper == infinity());
-}
+bool interval::contains(const float v) const { return (v >= lower || lower == -infinity()) && (v <= upper || upper == infinity()); }
 
-bool interval::contains(const interval ivl) const
-{
-    return (ivl.lower >= lower || lower == -infinity()) && (ivl.upper <= upper || upper == infinity());
-}
+bool interval::contains(const interval ivl) const { return (ivl.lower >= lower || lower == -infinity()) && (ivl.upper <= upper || upper == infinity()); }
 
-bool interval::overlaps(const interval ivl) const
-{
-    return ivl.lower <= upper && ivl.upper >= lower;
-}
+bool interval::overlaps(const interval ivl) const { return ivl.lower <= upper && ivl.upper >= lower; }
 
-bool interval::empty() const
-{
-    return upper < lower;
-}
+bool interval::empty() const { return upper < lower; }
 
-bool interval::finite() const
-{
-    return Finite(lower) && Finite(upper);
-}
+bool interval::finite() const { return Finite(lower) && Finite(upper); }
 
-bool interval::isnan() const
-{
-    return IsNaN(lower) || IsNaN(upper);
-}
+bool interval::isnan() const { return IsNaN(lower) || IsNaN(upper); }
 
-float interval::span() const
-{
-    return fabsf(upper - lower);
-}
+float interval::span() const { return fabsf(upper - lower); }
 
 float interval::lower_finite() const
 {
@@ -94,15 +67,9 @@ float interval::upper_finite() const
     return Finite(upper) ? upper : ((upper < 0.0f) ? -std::numeric_limits<float>::max() : std::numeric_limits<float>::max());
 }
 
-float interval::min_float()
-{
-    return std::numeric_limits<float>::min();
-}
+float interval::min_float() { return std::numeric_limits<float>::min(); }
 
-float interval::infinity()
-{
-    return std::numeric_limits<float>::infinity();
-}
+float interval::infinity() { return std::numeric_limits<float>::infinity(); }
 
 interval operator-(const interval& ivl)
 {

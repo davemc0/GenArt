@@ -357,3 +357,5 @@ MigrationBackup/
 *.old
 *.new
 build/
+*_bkp.gnx
+*_old.gnx

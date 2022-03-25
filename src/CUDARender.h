@@ -6,8 +6,7 @@ class Individual;
 class uc4DImage;
 
 // Contains all the data that should persist across CUDA render tasks
-class CUDARender
-{
+class CUDARender {
 public:
     CUDARender(const int deviceId_);
 

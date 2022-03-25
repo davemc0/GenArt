@@ -8,15 +8,14 @@
 #include <Image/ColorMap.h>
 #include <Image/tImage.h>
 
-class MathStyle : public Style
-{
+class MathStyle : public Style {
 public:
     MathStyle();
     ~MathStyle();
 
     virtual Individual::shp BreedIndividual(int IDNum, int Generation, Individual::shp Aa, Individual::shp Bb, float XMin, float YMin, float BoxWid);
 
-    virtual void LoadPopulation(const std::string & inFName);
+    virtual void LoadPopulation(const std::string& inFName);
 
     virtual std::string Style::getPopFileSuffix();
 

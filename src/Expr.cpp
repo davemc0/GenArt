@@ -26,7 +26,7 @@ Expr::Expr()
     left = right = NULL;
     count = 0;
     hasVars = 0;
-    // ivl is still empty
+    // Ivl is still empty
 }
 
 Expr::~Expr()

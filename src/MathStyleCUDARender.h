@@ -7,10 +7,7 @@
 
 class Individual;
 
-const int MAX_COLORMAP_ENTRIES = 64;
-
-class MathStyleCUDARender : public CUDARender
-{
+class MathStyleCUDARender : public CUDARender {
 public:
     MathStyleCUDARender(const int deviceId_);
 
@@ -21,6 +18,7 @@ public:
 
 private:
     cudaArray* m_ColorMapCUDAArray;
+    cudaTextureObject_t m_ColorMapTexObj;
     float m_totalElapsedTime;
     float m_deviceOpsPerMS;
 
