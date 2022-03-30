@@ -62,7 +62,7 @@ Expr* Const::Mutate(const int Prob, const int RandTreeSize, const float ConstPer
 
 Expr* Const::PerturbConstants(const float ConstPerturbStDev)
 {
-    val += NRandf(0.f, ConstPerturbStDev);
+    val += nfrand(0.f, ConstPerturbStDev);
     return this;
 }
 

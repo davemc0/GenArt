@@ -16,10 +16,10 @@
 extern Counters* C;
 extern Population* Pop;
 
-const int ISIZE = 12;             // Make random trees about this big
-const int MUTSIZE = 6;            // Make random subtrees during mutation about this big
-const int MUTPROB = 5;            // Mutate about 1/MUTPROB of the nodes in an Expr each time
-const float CONST_PERTURB = 0.2f; // Add NRand(CONST_PERTURB) to constants
+const int ISIZE = 12;                   // Make random trees about this big
+const int MUTSIZE = 6;                  // Make random subtrees during mutation about this big
+const int MUTPROB = 5;                  // Mutate about 1/MUTPROB of the nodes in an Expr each time
+const float CONST_PERTURB_STDEV = 0.2f; // Add nfrand(0, CONST_PERTURB_STDEV) to constants
 
 inline float L2Norm(const f3Pixel& p) { return sqrtf(sqr(p[0]) + sqr(p[1]) + sqr(p[2])); }
 
@@ -140,8 +140,8 @@ Expr* MathStyle::BreedChannel(const MathIndividual::shp Aa, const MathIndividual
 
         float c = 2.0f * (frand() + 1.0f - m_variability);
         switch (int(c)) {
-        case 0: C->inc("Chan.One.MutateExpr"); return MutateExpr(M, MUTPROB, MUTSIZE, CONST_PERTURB, VV);
-        case 1: C->inc("Chan.One.PerturbConstants"); return M->Copy()->PerturbConstants(CONST_PERTURB);
+        case 0: C->inc("Chan.One.MutateExpr"); return MutateExpr(M, MUTPROB, MUTSIZE, CONST_PERTURB_STDEV, VV);
+        case 1: C->inc("Chan.One.PerturbConstants"); return M->Copy()->PerturbConstants(CONST_PERTURB_STDEV);
         default: C->inc("Chan.One.Copy"); return M->Copy();
         }
     }
