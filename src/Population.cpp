@@ -117,6 +117,17 @@ bool IndivCompare_RenderTime(const Individual::shp Aa, const Individual::shp Bb)
         return Aa->IDNum < Bb->IDNum;
     }
 }
+
+bool IndivCompare_Generation(const Individual::shp Aa, const Individual::shp Bb)
+{
+    if (Aa->Generation < Bb->Generation) {
+        return false;
+    } else if (Aa->Generation > Bb->Generation) {
+        return true;
+    } else {
+        return Aa->IDNum < Bb->IDNum;
+    }
+}
 }; // namespace
 
 void Population::Sort(const SortCriterion SortBy, bool Z /*=true*/, bool P /*=true*/, bool C /*=false*/)
@@ -141,6 +152,11 @@ void Population::Sort(const SortCriterion SortBy, bool Z /*=true*/, bool P /*=tr
         if (Z) sort(beginZoo(), endZoo(), IndivCompare_RenderTime);
         if (P) sort(beginParents(), endParents(), IndivCompare_RenderTime);
         if (C) sort(beginChildren(), endChildren(), IndivCompare_RenderTime);
+        break;
+    case SORTBY_GENERATION:
+        if (Z) sort(beginZoo(), endZoo(), IndivCompare_Generation);
+        if (P) sort(beginParents(), endParents(), IndivCompare_Generation);
+        if (C) sort(beginChildren(), endChildren(), IndivCompare_Generation);
         break;
     default: ASSERT_R(0); break;
     }

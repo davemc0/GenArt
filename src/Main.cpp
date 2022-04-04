@@ -2,14 +2,16 @@
 // Copyright David K. McAllister, 1998 - 2008, 2022.
 
 // TODO:
+// Bug: Pressing space doesn't redo the final render when hovering on a child
 // Bug: Window layout is wonky with non-square sizes
-// Color: Crossover ColorMaps at array entries, not spans
 // Color: Fix number of colors in a ColorMap to a constant (8?), but be able to parse and remap any size for manual tweaking
 // Color: Improve color levels // What did I mean by this?
 // Color: Remove invisible ColorMap entries by scaling the Exprs. This prevents junk DNA and increases resolution of specifying colors
 // Evo: Evolve an image so its histogram matches a ColorMap
 // Evo: Fix Evolution
+// Evo: Get a database of good color palettes from the internet
 // Evo: When breeding a color mapped child of a non-color mapped parent, use palette generator to compute parent's color map
+// Evo: When making new random indiv, copy a colormap from a random Zoo individual
 // Expr: ?: operator is ternary. Try (A>0 ? A : B)
 // Expr: Output an expression as a .dot file to visualize
 // Expr: min and max operators
@@ -25,7 +27,7 @@
 // UI: Hover and interact with big image
 // UI: Save backup files to temp dir
 // UI: Sometimes clicking on an image to move it doesn't work. It's shortly after pressing space, but the children are done rendering.
-
+//
 // REJECTED:
 // Expr: Improved Perlin Noise operator. No; too complex on GPU
 // Expr: New variable: theta. No; don't want to add an atan2 per pixel.

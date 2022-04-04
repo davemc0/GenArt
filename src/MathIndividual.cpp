@@ -400,6 +400,12 @@ bool MathIndividual::less(const Individual& p_) const
             } else if (CMap.size() > p.CMap.size()) {
                 return false;
             } else {
+                for (size_t i = 0; i < CMap.size(); i++)
+                    if (CMap[i].r() < p.CMap[i].r())
+                        return true;
+                    else if (CMap[i].r() > p.CMap[i].r())
+                        return false;
+
                 return IDNum < p_.IDNum;
             }
         } else {

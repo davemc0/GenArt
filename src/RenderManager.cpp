@@ -11,7 +11,7 @@
 extern Population* Pop;
 extern RenderManager* RMan;
 
-RenderManager::RenderManager() : thumbQuality(8), finalQuality(8)
+RenderManager::RenderManager() : thumbQuality(16), finalQuality(16)
 {
     thWid = THUMB_WID_HGT;
     thHgt = THUMB_WID_HGT;

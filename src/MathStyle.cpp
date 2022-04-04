@@ -372,7 +372,7 @@ float* makePDF(int Sz, float scale)
     float sum = 0;
     // Sprinkle probability mass
     for (int i = 0; i < Sz; i++) {
-        p[i] = drand();
+        p[i] = frand();
         sum += p[i];
     }
 

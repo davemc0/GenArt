@@ -6,7 +6,7 @@
 
 class Style;
 
-enum SortCriterion { SORTBY_SCORE = 0, SORTBY_IDNUM = 1, SORTBY_COLORSPACE = 2, SORTBY_RENDERTIME = 3, SORTBY__MAX = 4 };
+enum SortCriterion { SORTBY_SCORE = 0, SORTBY_IDNUM = 1, SORTBY_COLORSPACE = 2, SORTBY_RENDERTIME = 3, SORTBY_GENERATION = 4, SORTBY__MAX = 5 };
 
 class Population {
 public:

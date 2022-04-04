@@ -35,30 +35,110 @@ extern Style* SEng;
 
 const int KEY_OFFSET = 1000;
 
+#define CATCHBLOCK                                                           \
+    catch (DMcError & Er)                                                    \
+    {                                                                        \
+        std::cerr << __func__ << " caught DMcError: " << Er.Er << std::endl; \
+        std::cerr.flush();                                                   \
+        throw Er;                                                            \
+    }                                                                        \
+    catch (...)                                                              \
+    {                                                                        \
+        std::cerr << __func__ << " caught exception. Bye.\n";                \
+        std::cerr.flush();                                                   \
+        throw;                                                               \
+    }
+
 ////////////////////////////////////////////////////////
 // GLUT Callbacks
 
-void cbglutDisplay(void) { GUI->Display(); }
+void cbglutDisplay(void)
+{
+    try {
+        GUI->Display();
+    }
+    CATCHBLOCK;
+}
 
-void cbglutIdle() { GUI->Idle(); }
+void cbglutIdle()
+{
+    try {
+        GUI->Idle();
+    }
+    CATCHBLOCK;
+}
 
-void cbglutKeyPress(unsigned char key, int x, int y) { GUI->GeneralOps(static_cast<int>(key), x, y); }
+void cbglutKeyPress(unsigned char key, int x, int y)
+{
+    try {
+        GUI->GeneralOps(static_cast<int>(key), x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutMenuStatus(int bob, int x, int y) { GUI->MenuStatus(bob, x, y); }
+void cbglutMenuStatus(int bob, int x, int y)
+{
+    try {
+        GUI->MenuStatus(bob, x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutMotion(int x, int y) { GUI->ClickDragMotion(x, y); }
+void cbglutMotion(int x, int y)
+{
+    try {
+        GUI->ClickDragMotion(x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutPassiveMotion(int x, int y) { GUI->PassiveMotion(x, y); }
+void cbglutPassiveMotion(int x, int y)
+{
+    try {
+        GUI->PassiveMotion(x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutMouse(int button, int state, int x, int y) { GUI->Mouse(button, state, x, y); }
+void cbglutMouse(int button, int state, int x, int y)
+{
+    try {
+        GUI->Mouse(button, state, x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutMouseWheel(int wheel, int direction, int x, int y) { GUI->MouseWheel(wheel, direction, x, y); }
+void cbglutMouseWheel(int wheel, int direction, int x, int y)
+{
+    try {
+        GUI->MouseWheel(wheel, direction, x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutReshape(int w, int h) { GUI->Reshape(w, h); }
+void cbglutReshape(int w, int h)
+{
+    try {
+        GUI->Reshape(w, h);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutSpecialKeyPress(int key, int x, int y) { GUI->GeneralOps(key + KEY_OFFSET, x, y); }
+void cbglutSpecialKeyPress(int key, int x, int y)
+{
+    try {
+        GUI->GeneralOps(key + KEY_OFFSET, x, y);
+    }
+    CATCHBLOCK;
+}
 
-void cbglutMenuPress(int c) { GUI->GeneralOps(c, -1, -1); }
+void cbglutMenuPress(int c)
+{
+    try {
+        GUI->GeneralOps(c, -1, -1);
+    }
+    CATCHBLOCK;
+}
 
 ////////////////////////////////////////////////////////
 // Public Members
@@ -806,12 +886,12 @@ size_t UI::SetCurIndiv(const int x, const int y)
 
 void UI::SetTitle()
 {
-    const char* SortByNames[] = {"Score", "IDNumber", "ColorSpace", "RenderTime", "None"};
+    const char* SortByNames[] = {"Score", "IDNumber", "ColorSpace", "RenderTime", "Generation", "None"};
     const char* ChannelNames[] = {"Red", "Green", "Blue"};
 
     int zooOfs = m_zooRowOffset * m_winImgsX;
     std::ostringstream ost;
-    ost << m_winTitle << " Sort by: " << SortByNames[m_popSortBy] << "   " << (m_finalRenderOnHover ? " Final Rendering    " : "")
+    ost << m_winTitle << " Sort by: " << SortByNames[m_popSortBy] << "   " << (m_finalRenderOnHover ? " finalRenderOnHover    " : "")
         << (m_autoEvolve ? " autoEvolve    " : "") << ChannelNames[m_curChan] << "    "
         << "Variability: " << SEng->getVariability() << "    Row: " << zooOfs << " Total Created: " << Evo->IndivsCreated();
     glutSetWindowTitle(ost.str().c_str());
