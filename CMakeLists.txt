@@ -8,7 +8,7 @@ set(EXE_NAME GenArt)
 project(${EXE_NAME} LANGUAGES CXX CUDA)
 enable_language(CUDA)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # GLEW - setenv GLEW_HOME C:/Users/davemc/source/repos/Goodies/glew-2.2.0

@@ -6,10 +6,9 @@
 // DMcTools
 #include "Math/Random.h"
 
-#include <format>
 #include <fstream>
 
-Population::Population() { m_FNameBase = std::string("Ex") + std::format("{:04}", irand(0, 10000)); }
+Population::Population() { m_FNameBase = std::string("Ex") + std::to_string(irand(1000, 10000)); }
 
 void Population::MoveParentToZoo(size_t i)
 {
